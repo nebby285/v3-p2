@@ -213,7 +213,11 @@ setInterval(() => {
 function fmt(n,d=2){ return n==null||isNaN(n)?'—':parseFloat(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}); }
 function fmtT(s){ return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; }
 
+let lastBTCDisplay = 0;
 function setBTC(p) {
+  const now = Date.now();
+  if (now - lastBTCDisplay < 1000) return; // max once per second
+  lastBTCDisplay = now;
   const el = document.getElementById('btc-val');
   el.textContent = '$'+fmt(p,2);
   if (prevBTC!=null) {
@@ -223,11 +227,21 @@ function setBTC(p) {
   prevBTC = p;
 }
 
-function updateOdds(yes,no) {
+// Throttle odds updates to max once per 2 seconds — prevents rapid flickering
+let lastOddsUpdate = 0, pendingOdds = null;
+
+function updateOdds(yes, no) {
+  pendingOdds = { yes, no };
+  const now = Date.now();
+  if (now - lastOddsUpdate < 2000) return;
+  applyOdds(yes, no);
+}
+
+function applyOdds(yes, no) {
+  lastOddsUpdate = Date.now();
   const yEl=document.getElementById('yes-p'), nEl=document.getElementById('no-p');
   const yPct=document.getElementById('yes-pct'), nPct=document.getElementById('no-pct');
   const yPay=document.getElementById('yes-pay'), nPay=document.getElementById('no-pay');
-  const yT=document.getElementById('yes-tile'), nT=document.getElementById('no-tile');
   if(!yEl) return;
   yEl.textContent='¢'+Math.round(yes*100);
   nEl.textContent='¢'+Math.round(no*100);
@@ -235,8 +249,9 @@ function updateOdds(yes,no) {
   nPct.textContent=Math.round(no*100)+'% implied';
   yPay.innerHTML=`Pays <strong>${yes>0?(1/yes).toFixed(2):'—'}x</strong> if BTC finishes higher`;
   nPay.innerHTML=`Pays <strong>${no>0?(1/no).toFixed(2):'—'}x</strong> if BTC finishes lower`;
-
 }
+
+setInterval(() => { if(pendingOdds){ applyOdds(pendingOdds.yes, pendingOdds.no); pendingOdds=null; } }, 2000);
 
 function updateDir() {
   const dEl=document.getElementById('dtag'), cEl=document.getElementById('cur-val');
