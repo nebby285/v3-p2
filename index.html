@@ -441,7 +441,16 @@ function connect(){
   ws.onopen=()=>{setWS('connected');reconnDelay=1000;};
   ws.onmessage=(e)=>{
     const msg=JSON.parse(e.data);
-    if(msg.type==='market'){currentMarket=msg.market;latestOdds=msg.odds;render(currentMarket,latestOdds);}
+    if(msg.type==='market'){
+      currentMarket=msg.market;
+      latestOdds=msg.odds;
+      render(currentMarket,latestOdds);
+      // Force candle refresh on new market window
+      lastCandleFetch=0;
+      cachedCandles=[];
+      // Run engine immediately on new market
+      setTimeout(runDecisionEngine,1500);
+    }
     if(msg.type==='btc_price'){btcPrice=msg.price;setBTC(btcPrice);updateDir();}
     if(msg.type==='odds'){latestOdds={yes:msg.yes,no:msg.no};updateOdds(msg.yes,msg.no);}
   };
@@ -585,6 +594,7 @@ function measureChoppiness(c){
 }
 
 async function runDecisionEngine(){
+  lastEngineRun=Date.now();
   if(!currentMarket||!btcPrice||!latestOdds)return;
   if(!currentMarket.startPrice)return;
   const secsLeft=Math.max(0,currentMarket.endSec-Math.floor(Date.now()/1000));
@@ -652,7 +662,7 @@ function renderEngineCard({decision,reason,bull,bear,conf,quality,edge,strength,
   card.innerHTML=`
     <div class="ec-header">
       <div class="ec-header-left"><div class="ec-title">Decision Engine</div></div>
-      <div class="ec-updated">${ts}</div>
+      <div class="ec-updated" id="engine-updated-ts">${ts} · next in <span id="eng-countdown">${Math.round(ENGINE_CFG.ENGINE_INTERVAL/1000)}s</span></div>
     </div>
 
     <div class="ec-decision">
@@ -702,12 +712,32 @@ function renderEngineCard({decision,reason,bull,bear,conf,quality,edge,strength,
   `;
 }
 
+let lastEngineRun=0;
+
 function startEngine(){
   if(engineTimer)clearInterval(engineTimer);
-  setTimeout(runDecisionEngine,3000);
+  runDecisionEngine();
   engineTimer=setInterval(runDecisionEngine,ENGINE_CFG.ENGINE_INTERVAL);
 }
-setTimeout(startEngine,2000);
+
+// Live countdown to next engine run
+setInterval(()=>{
+  const el=document.getElementById('eng-countdown');
+  if(!el||!lastEngineRun)return;
+  const secsUntil=Math.max(0,Math.round((ENGINE_CFG.ENGINE_INTERVAL-(Date.now()-lastEngineRun))/1000));
+  el.textContent=secsUntil+'s';
+},1000);
+
+// Watchdog — if engine hasn't run in 60s, restart it
+setInterval(()=>{
+  if(lastEngineRun>0&&Date.now()-lastEngineRun>60000){
+    console.warn('[ENGINE] watchdog triggered — restarting');
+    cachedCandles=[];lastCandleFetch=0;
+    startEngine();
+  }
+},20000);
+
+setTimeout(startEngine,3000);
 </script>
 </body>
 </html>
