@@ -169,6 +169,88 @@ header {
 .spinner { width: 28px; height: 28px; border: 2px solid var(--border2); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* ENGINE CARD */
+.ecard {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 20px; overflow: hidden; margin-top: 14px;
+  transition: border-color 0.4s;
+}
+.ecard.up   { border-color: var(--green-border); }
+.ecard.down { border-color: var(--red-border); }
+.ecard.none { border-color: rgba(255,152,0,0.2); }
+.ecard.loading-state { border-color: var(--border); }
+
+.ecard-header {
+  padding: 16px 22px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.ecard-title { font-size: 13px; font-weight: 700; color: var(--sub); letter-spacing: 0.02em; text-transform: uppercase; }
+.ecard-updated { font-family: 'Space Mono', monospace; font-size: 9px; color: var(--muted); }
+
+.edecision-row {
+  padding: 20px 22px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+}
+.edecision-label { font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+.edecision-val {
+  font-family: 'Space Mono', monospace; font-size: 26px; font-weight: 700; letter-spacing: -1px;
+}
+.edecision-val.up   { color: var(--green); }
+.edecision-val.down { color: var(--red); }
+.edecision-val.none { color: var(--amber); }
+
+.escores-row {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  border-bottom: 1px solid var(--border);
+}
+.escore-block { padding: 12px 22px; border-right: 1px solid var(--border); }
+.escore-block:last-child { border-right: none; }
+.escore-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+.escore-val { font-family: 'Space Mono', monospace; font-size: 16px; font-weight: 700; }
+.escore-val.bull { color: var(--green); }
+.escore-val.bear { color: var(--red); }
+.escore-val.conf { color: var(--text); }
+
+.ebar-row { padding: 10px 22px 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+.ebar-label { font-size: 10px; color: var(--muted); flex-shrink: 0; min-width: 70px; }
+.ebar-track { flex: 1; height: 4px; background: var(--border2); border-radius: 2px; overflow: hidden; }
+.ebar-fill-bull { height: 100%; background: var(--green); border-radius: 2px; transition: width 0.5s ease; }
+.ebar-fill-bear { height: 100%; background: var(--red);   border-radius: 2px; transition: width 0.5s ease; }
+.ebar-fill-conf { height: 100%; background: var(--blue);  border-radius: 2px; transition: width 0.5s ease; }
+.ebar-pct { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--sub); min-width: 36px; text-align: right; }
+
+.esignals-grid {
+  padding: 14px 22px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+}
+.esignal-row {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;
+  padding: 7px 10px; border-radius: 8px; background: var(--card2);
+  border: 1px solid var(--border);
+}
+.esignal-name { font-size: 10px; color: var(--sub); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; flex-shrink: 0; }
+.esignal-note { font-size: 10px; color: var(--muted); text-align: right; line-height: 1.4; }
+.esignal-badge {
+  font-family: 'Space Mono', monospace; font-size: 9px; font-weight: 700;
+  padding: 2px 6px; border-radius: 3px; flex-shrink: 0; white-space: nowrap;
+}
+.sbull { background: var(--green-dim); color: var(--green); border: 1px solid var(--green-border); }
+.sbear { background: var(--red-dim);   color: var(--red);   border: 1px solid var(--red-border); }
+.sneut { background: rgba(68,68,90,0.12); color: var(--muted); border: 1px solid var(--border2); }
+
+.ereason {
+  padding: 12px 22px; border-top: 1px solid var(--border);
+  font-size: 11px; color: var(--sub); font-family: 'Space Mono', monospace; line-height: 1.6;
+}
+
+@media (max-width: 500px) {
+  .escores-row { grid-template-columns: 1fr; }
+  .escore-block { border-right: none; border-bottom: 1px solid var(--border); }
+  .esignals-grid { grid-template-columns: 1fr; }
+}
+
 @media (max-width: 500px) {
   .odds-row { grid-template-columns: 1fr; }
   .ptb-row { grid-template-columns: 1fr; }
@@ -196,6 +278,15 @@ header {
 
 <div class="main" id="main">
   <div class="loading"><div class="spinner"></div><div>Connecting to live feed...</div></div>
+</div>
+<div class="main" style="padding-top:0" id="engine-wrap">
+  <div class="ecard loading-state" id="engine-card">
+    <div class="ecard-header">
+      <div class="ecard-title">Decision Engine</div>
+      <div class="ecard-updated" id="engine-updated">—</div>
+    </div>
+    <div style="padding:32px;text-align:center;color:var(--muted);font-size:13px;">Waiting for market data...</div>
+  </div>
 </div>
 
 <script>
@@ -851,7 +942,201 @@ async function runDecisionEngine() {
     confidence, tradeQuality, edge, signals: breakdown
   };
 
+  // Render to UI
+  renderEngineCard({
+    decision, reason, bullishScore, bearishScore,
+    confidence, tradeQuality, edge,
+    signals: { s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11,s12,chop }
+  });
+
   return window.__ENGINE_RESULT__;
+}
+
+// ── RENDER ENGINE CARD ────────────────────────────────────────────────────────
+function renderEngineCard(r) {
+  const card = document.getElementById('engine-card');
+  if (!card) return;
+
+  const { decision, reason, bullishScore, bearishScore, confidence, tradeQuality, edge, signals } = r;
+  const { s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11,s12,chop } = signals;
+
+  const maxScore  = Object.values(ENGINE_CFG.WEIGHTS).reduce((a,b)=>a+b,0);
+  const bullPct   = Math.min(100, (bullishScore / maxScore) * 100).toFixed(0);
+  const bearPct   = Math.min(100, (bearishScore / maxScore) * 100).toFixed(0);
+  const confPct   = (confidence * 100).toFixed(0);
+  const qualPct   = (tradeQuality * 100).toFixed(0);
+
+  const dClass = decision === 'BUY UP' ? 'up' : decision === 'BUY DOWN' ? 'down' : 'none';
+  const dLabel = decision === 'BUY UP' ? '↑ BUY UP' : decision === 'BUY DOWN' ? '↓ BUY DOWN' : '— NO TRADE';
+
+  // Signal badge helper
+  function badge(bull, bear) {
+    if (bull > 0 && bull >= bear) return `<span class="esignal-badge sbull">BULL ${bull.toFixed(1)}</span>`;
+    if (bear > 0 && bear > bull)  return `<span class="esignal-badge sbear">BEAR ${bear.toFixed(1)}</span>`;
+    return `<span class="esignal-badge sneut">NEUT</span>`;
+  }
+
+  // Modifier badge for confidence signals
+  function modBadge(mod) {
+    if (!mod) return `<span class="esignal-badge sneut">—</span>`;
+    if (mod > 0) return `<span class="esignal-badge sbull">+${(mod*100).toFixed(0)}% conf</span>`;
+    return `<span class="esignal-badge sbear">${(mod*100).toFixed(0)}% conf</span>`;
+  }
+
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true,timeZone:'America/New_York'})+' ET';
+
+  card.className = `ecard ${dClass}`;
+  card.innerHTML = `
+    <div class="ecard-header">
+      <div class="ecard-title">Decision Engine</div>
+      <div class="ecard-updated">Updated ${timeStr}</div>
+    </div>
+
+    <div class="edecision-row">
+      <div>
+        <div class="edecision-label">Recommendation</div>
+        <div class="edecision-val ${dClass}">${dLabel}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="edecision-label">Edge</div>
+        <div style="font-family:'Space Mono',monospace;font-size:18px;font-weight:700;color:var(--text)">${edge.toFixed(2)}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">min ${ENGINE_CFG.MIN_EDGE} required</div>
+      </div>
+    </div>
+
+    <div class="escores-row">
+      <div class="escore-block">
+        <div class="escore-label">Bullish Score</div>
+        <div class="escore-val bull">${bullishScore.toFixed(2)}</div>
+      </div>
+      <div class="escore-block">
+        <div class="escore-label">Bearish Score</div>
+        <div class="escore-val bear">${bearishScore.toFixed(2)}</div>
+      </div>
+      <div class="escore-block">
+        <div class="escore-label">Confidence</div>
+        <div class="escore-val conf">${confPct}%</div>
+      </div>
+    </div>
+
+    <div class="ebar-row">
+      <div class="ebar-label">Bull score</div>
+      <div class="ebar-track"><div class="ebar-fill-bull" style="width:${bullPct}%"></div></div>
+      <div class="ebar-pct">${bullPct}%</div>
+    </div>
+    <div class="ebar-row">
+      <div class="ebar-label">Bear score</div>
+      <div class="ebar-track"><div class="ebar-fill-bear" style="width:${bearPct}%"></div></div>
+      <div class="ebar-pct">${bearPct}%</div>
+    </div>
+    <div class="ebar-row">
+      <div class="ebar-label">Confidence</div>
+      <div class="ebar-track"><div class="ebar-fill-conf" style="width:${confPct}%"></div></div>
+      <div class="ebar-pct">${confPct}%</div>
+    </div>
+    <div class="ebar-row">
+      <div class="ebar-label">Trade quality</div>
+      <div class="ebar-track"><div class="ebar-fill-conf" style="width:${qualPct}%"></div></div>
+      <div class="ebar-pct">${qualPct}%</div>
+    </div>
+
+    <div class="esignals-grid">
+      <div class="esignal-row">
+        <div>
+          <div class="esignal-name">Window Delta</div>
+          <div class="esignal-note">${s1.note}</div>
+        </div>
+        ${badge(s1.bull * ENGINE_CFG.WEIGHTS.windowDelta, s1.bear * ENGINE_CFG.WEIGHTS.windowDelta)}
+      </div>
+      <div class="esignal-row">
+        <div>
+          <div class="esignal-name">1m Momentum</div>
+          <div class="esignal-note">${s2.note}</div>
+        </div>
+        ${badge(s2.bull * ENGINE_CFG.WEIGHTS.momentum1m, s2.bear * ENGINE_CFG.WEIGHTS.momentum1m)}
+      </div>
+      <div class="esignal-row">
+        <div>
+          <div class="esignal-name">3m Trend</div>
+          <div class="esignal-note">${s3.note}</div>
+        </div>
+        ${badge(s3.bull * ENGINE_CFG.WEIGHTS.trend3m, s3.bear * ENGINE_CFG.WEIGHTS.trend3m)}
+      </div>
+      <div class="esignal-row">
+        <div>
+          <div class="esignal-name">5m Bias</div>
+          <div class="esignal-note">${s4.note}</div>
+        </div>
+        ${badge(s4.bull * ENGINE_CFG.WEIGHTS.trend5m, s4.bear * ENGINE_CFG.WEIGHTS.trend5m)}
+      </div>
+      <div class="esignal-row">
+        <div>
+          <div class="esignal-name">Acceleration</div>
+          <div class="esignal-note">${s5.note}</div>
+        </div>
+        ${badge(s5.bull * ENGINE_CFG.WEIGHTS.acceleration, s5.bear * ENGINE_CFG.WEIGHTS.acceleration)}
+      </div>
+      <div class="esignal-row">
+        <div>
+          <div class="esignal-name">EMA 9/21</div>
+          <div class="esignal-note">${s6.note}</div>
+        </div>
+        ${badge(s6.bull * ENGINE_CFG.WEIGHTS.emaCross, s6.bear * ENGINE_CFG.WEIGHTS.emaCross)}
+      </div>
+      <div class="esignal-row">
+        <div>
+          <div class="esignal-name">RSI (14)</div>
+          <div class="esignal-note">${s7.note}</div>
+        </div>
+        ${badge(s7.bull * ENGINE_CFG.WEIGHTS.rsiExtreme, s7.bear * ENGINE_CFG.WEIGHTS.rsiExtreme)}
+      </div>
+      <div class="esignal-row">
+        <div>
+          <div class="esignal-name">Volume</div>
+          <div class="esignal-note">${s8.note}</div>
+        </div>
+        ${modBadge(s8.confidence_mod)}
+      </div>
+      <div class="esignal-row">
+        <div>
+          <div class="esignal-name">Market Odds</div>
+          <div class="esignal-note">${s9.note}</div>
+        </div>
+        ${badge(s9.bull * ENGINE_CFG.WEIGHTS.marketOdds, s9.bear * ENGINE_CFG.WEIGHTS.marketOdds)}
+      </div>
+      <div class="esignal-row">
+        <div>
+          <div class="esignal-name">Mean Reversion</div>
+          <div class="esignal-note">${s10.note}</div>
+        </div>
+        ${badge(s10.bull * ENGINE_CFG.WEIGHTS.meanReversion, s10.bear * ENGINE_CFG.WEIGHTS.meanReversion)}
+      </div>
+      <div class="esignal-row">
+        <div>
+          <div class="esignal-name">Wick Rejection</div>
+          <div class="esignal-note">${s11.note}</div>
+        </div>
+        ${badge(s11.bull * ENGINE_CFG.WEIGHTS.fakeBreakout, s11.bear * ENGINE_CFG.WEIGHTS.fakeBreakout)}
+      </div>
+      <div class="esignal-row">
+        <div>
+          <div class="esignal-name">Time in Window</div>
+          <div class="esignal-note">${s12.note}</div>
+        </div>
+        ${modBadge(s12.confidence_mod)}
+      </div>
+      <div class="esignal-row" style="grid-column:1/-1">
+        <div>
+          <div class="esignal-name">Choppiness</div>
+          <div class="esignal-note">${chop.note}</div>
+        </div>
+        <span class="esignal-badge ${chop.chopScore > 0.5 ? 'sbear' : 'sneut'}">${(chop.chopScore*100).toFixed(0)}% choppy</span>
+      </div>
+    </div>
+
+    <div class="ereason">⟶ ${reason}</div>
+  `;
 }
 
 // ── START ENGINE — runs every 15 seconds ──────────────────────────────────────
