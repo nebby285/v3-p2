@@ -174,6 +174,35 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .disclaimer{margin:0 12px;padding:10px 14px;border-radius:8px;background:rgba(68,68,90,.06);border:1px solid var(--border)}
 .disclaimer-txt{font-size:9px;color:var(--muted);line-height:1.6;font-family:'JetBrains Mono',monospace;text-align:center}
 
+/* tracker card */
+.tracker-card{background:var(--c1);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin:0 12px 10px}
+.tracker-head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--c2)}
+.tracker-head-title{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-family:'JetBrains Mono',monospace}
+.tracker-stats{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--border)}
+.ts-cell{padding:14px 12px;text-align:center;border-right:1px solid var(--border)}
+.ts-cell:last-child{border-right:none}
+.ts-label{font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:'JetBrains Mono',monospace;margin-bottom:4px}
+.ts-val{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700}
+.ts-val.win{color:var(--green)}
+.ts-val.loss{color:var(--red)}
+.ts-val.skip{color:var(--sub)}
+.ts-val.rate{color:var(--amber)}
+.tracker-history{padding:12px 16px}
+.th-title{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace;margin-bottom:8px}
+.th-list{display:flex;flex-direction:column;gap:4px}
+.th-row{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-radius:6px;background:var(--c2);border:1px solid var(--border)}
+.th-time{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);flex-shrink:0;min-width:80px}
+.th-pred{font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;flex:1;text-align:center}
+.th-pred.up{color:var(--green)}
+.th-pred.down{color:var(--red)}
+.th-pred.skip{color:var(--sub)}
+.th-result{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;flex-shrink:0}
+.th-result.win{background:var(--gd);color:var(--green);border:1px solid var(--gb)}
+.th-result.loss{background:var(--rd);color:var(--red);border:1px solid var(--rb)}
+.th-result.pending{background:rgba(255,187,0,.08);color:var(--amber);border:1px solid rgba(255,187,0,.2)}
+.th-result.skip{background:rgba(68,68,90,.1);color:var(--muted);border:1px solid var(--border2)}
+.th-empty{text-align:center;padding:20px;font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+
 /* loading */
 .loading{display:flex;flex-direction:column;align-items:center;padding:60px 20px;gap:12px;color:var(--muted);font-size:11px;font-family:'JetBrains Mono',monospace}
 .spinner{width:24px;height:24px;border:2px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
@@ -212,8 +241,30 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
   </div>
 </div>
 
+<div class="sec-label">Track Record</div>
+<div id="tracker-wrap">
+  <div class="tracker-card">
+    <div class="tracker-head">
+      <div class="tracker-head-title">Signal Performance</div>
+      <div style="font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace" id="tracker-session">Session</div>
+    </div>
+    <div class="tracker-stats" id="tracker-stats">
+      <div class="ts-cell"><div class="ts-label">Wins</div><div class="ts-val win" id="t-wins">0</div></div>
+      <div class="ts-cell"><div class="ts-label">Losses</div><div class="ts-val loss" id="t-losses">0</div></div>
+      <div class="ts-cell"><div class="ts-label">Skipped</div><div class="ts-val skip" id="t-skips">0</div></div>
+      <div class="ts-cell"><div class="ts-label">Win Rate</div><div class="ts-val rate" id="t-rate">—</div></div>
+    </div>
+    <div class="tracker-history">
+      <div class="th-title">Recent decisions</div>
+      <div class="th-list" id="tracker-list">
+        <div class="th-empty">No decisions yet this session</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="disclaimer">
-  <div class="disclaimer-txt">Not financial advice. This is an automated signal engine for informational purposes only. Always trade responsibly.</div>
+  <div class="disclaimer-txt">Not financial advice. Automated signal engine for informational purposes only. Past performance does not guarantee future results.</div>
 </div>
 
 <script>
@@ -401,6 +452,10 @@ function connect(){
   ws.onmessage=(e)=>{
     const msg=JSON.parse(e.data);
     if(msg.type==='market'){
+      // Resolve previous window before switching
+      if(currentMarket && msg.market.wts !== currentMarket.wts) {
+        resolveLastDecision(msg.market);
+      }
       currentMarket=msg.market;latestOdds=msg.odds;render(currentMarket,latestOdds);
       lastCandleFetch=0;cachedCandles=[];
       setTimeout(runDecisionEngine,1500);
@@ -414,7 +469,7 @@ function connect(){
 connect();
 
 // ═══════════════════════════════════════════════════════════════
-// DECISION ENGINE
+// DECISION ENGINE — locks one decision per window, tracks W/L
 // ═══════════════════════════════════════════════════════════════
 const ENGINE_CFG={
   MIN_CONFIDENCE:.35,MIN_EDGE:1.5,MIN_TRADE_QUALITY:.40,
@@ -422,8 +477,96 @@ const ENGINE_CFG={
   WEIGHTS:{windowDelta:7.0,momentum1m:2.5,trend3m:2.0,trend5m:1.5,acceleration:1.5,
     emaCross:1.0,rsiExtreme:1.5,volumeSurge:1.0,marketOdds:1.5,meanReversion:1.0,fakeBreakout:1.5,timeInWindow:1.0}
 };
+
 let cachedCandles=[],lastCandleFetch=0,engineTimer=null;
 
+// ── LOCKED DECISION STATE ─────────────────────────────────────
+// One decision per window, frozen until next window opens
+let lockedDecision = null;
+// { wts, decision, reason, bull, bear, conf, quality, edge, signals, startPrice, resolved: false }
+
+// ── WIN/LOSS TRACKER ──────────────────────────────────────────
+let tracker = {
+  wins: 0, losses: 0, skips: 0,
+  history: [] // last 10: { time, decision, result, window }
+};
+
+// Load tracker from sessionStorage so it survives refreshes within session
+try {
+  const saved = sessionStorage.getItem('btc_tracker');
+  if(saved) tracker = JSON.parse(saved);
+} catch(e) {}
+
+function saveTracker() {
+  try { sessionStorage.setItem('btc_tracker', JSON.stringify(tracker)); } catch(e) {}
+}
+
+function renderTracker() {
+  const wins = tracker.wins, losses = tracker.losses, skips = tracker.skips;
+  const total = wins + losses;
+  const rate = total > 0 ? Math.round((wins/total)*100)+'%' : '—';
+  document.getElementById('t-wins').textContent = wins;
+  document.getElementById('t-losses').textContent = losses;
+  document.getElementById('t-skips').textContent = skips;
+  document.getElementById('t-rate').textContent = rate;
+
+  const list = document.getElementById('tracker-list');
+  if(!tracker.history.length) {
+    list.innerHTML = '<div class="th-empty">No decisions yet this session</div>';
+    return;
+  }
+  list.innerHTML = [...tracker.history].reverse().map(h => {
+    const predClass = h.decision==='BUY UP'?'up':h.decision==='BUY DOWN'?'down':'skip';
+    const predTxt = h.decision==='BUY UP'?'↑ UP':h.decision==='BUY DOWN'?'↓ DOWN':'— SKIP';
+    const resClass = h.result==='WIN'?'win':h.result==='LOSS'?'loss':h.result==='PENDING'?'pending':'skip';
+    return `<div class="th-row">
+      <div class="th-time">${h.time}</div>
+      <div class="th-pred ${predClass}">${predTxt}</div>
+      <div class="th-result ${resClass}">${h.result}</div>
+    </div>`;
+  }).join('');
+
+  const total2 = wins + losses;
+  document.getElementById('tracker-session').textContent =
+    total2 > 0 ? `${wins}W ${losses}L · ${Math.round((wins/total2)*100)}% accuracy` : 'Session';
+}
+
+// ── RESOLVE PREVIOUS WINDOW ───────────────────────────────────
+// Called when a new window opens — checks if our last decision was right
+function resolveLastDecision(newMarket) {
+  if(!lockedDecision || lockedDecision.resolved) return;
+  if(lockedDecision.wts === newMarket.wts) return; // same window still
+
+  // The previous window has closed — we can now determine outcome
+  // "UP" wins if btcPrice >= startPrice at window close
+  // We use the current btcPrice as the settlement price (close enough)
+  const { decision, startPrice } = lockedDecision;
+
+  if(decision === 'NO TRADE') {
+    // No trade — count as skip
+    tracker.skips++;
+    logHistory(lockedDecision, 'SKIP');
+  } else {
+    const btcWentUp = btcPrice >= startPrice;
+    const predictedUp = decision === 'BUY UP';
+    const won = predictedUp === btcWentUp;
+    if(won) tracker.wins++;
+    else tracker.losses++;
+    logHistory(lockedDecision, won ? 'WIN' : 'LOSS');
+  }
+
+  lockedDecision.resolved = true;
+  saveTracker();
+  renderTracker();
+}
+
+function logHistory(ld, result) {
+  const time = new Date(ld.wts*1000).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'America/New_York'});
+  tracker.history.push({ time, decision: ld.decision, result, window: ld.wts });
+  if(tracker.history.length > 20) tracker.history.shift(); // keep last 20
+}
+
+// ── CANDLE + MATH ─────────────────────────────────────────────
 async function fetchCandles(limit=ENGINE_CFG.CANDLE_LIMIT){
   try{
     const r=await fetch(`https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1m&limit=${limit}`,{signal:AbortSignal.timeout(5000)});
@@ -449,11 +592,24 @@ function signalFakeBreakout(c){if(c.length<3)return{bull:0,bear:0,note:'insuffic
 function signalTimeInWindow(sl,tot=300){const el=(tot-sl)/tot;if(el>.90)return{confidence_mod:.1,note:'last 10% — locked'};if(el<.15)return{confidence_mod:-.1,note:'early window'};if(el>.50)return{confidence_mod:.05,note:'mid-late window'};return{confidence_mod:0,note:Math.round(el*100)+'% elapsed'};}
 function measureChoppiness(c){if(c.length<5)return{chopScore:.5,note:'insufficient'};const s=c.slice(-5);let dc=0;for(let i=1;i<s.length;i++){const p=s[i-1].close-s[i-1].open,q=s[i].close-s[i].open;if((p>0&&q<0)||(p<0&&q>0))dc++;}return{chopScore:dc/4,note:dc+'/4 dir changes'};}
 
+// ── MAIN ENGINE RUN ───────────────────────────────────────────
 async function runDecisionEngine(){
   lastEngineRun=Date.now();
   if(!currentMarket||!btcPrice||!latestOdds||!currentMarket.startPrice)return;
   const secsLeft=Math.max(0,currentMarket.endSec-Math.floor(Date.now()/1000));
   if(secsLeft<=0)return;
+
+  // ── LOCKED DECISION CHECK ──────────────────────────────────
+  // If we already have a decision for this window, DON'T re-evaluate
+  // Just re-render the existing locked decision (it may have been lost on re-render)
+  if(lockedDecision && lockedDecision.wts === currentMarket.wts && !lockedDecision.resolved) {
+    renderPredCard(lockedDecision); // re-render without changing decision
+    return;
+  }
+
+  // ── NEW WINDOW — make fresh decision ──────────────────────
+  console.log('[ENGINE] new window detected, evaluating...');
+
   const now=Date.now();
   if(now-lastCandleFetch>20000||!cachedCandles.length){const c=await fetchCandles();if(c){cachedCandles=c;lastCandleFetch=now;}}
   const c=cachedCandles,W=ENGINE_CFG.WEIGHTS;
@@ -480,15 +636,37 @@ async function runDecisionEngine(){
   conf=clamp(conf,0,1);
   const strength=total/maxS,quality=clamp((strength+conf)/2,0,1);
   let decision='NO TRADE',reason='';
-  if(conf<ENGINE_CFG.MIN_CONFIDENCE){decision='NO TRADE';reason='confidence too low ('+( conf*100).toFixed(1)+'%)';}
+  if(conf<ENGINE_CFG.MIN_CONFIDENCE){decision='NO TRADE';reason='confidence too low ('+(conf*100).toFixed(1)+'%)';}
   else if(quality<ENGINE_CFG.MIN_TRADE_QUALITY){decision='NO TRADE';reason='trade quality too low ('+(quality*100).toFixed(1)+'%)';}
   else if(edge<ENGINE_CFG.MIN_EDGE){decision='NO TRADE';reason='edge too small ('+edge.toFixed(2)+')';}
   else if(bull>bear){decision='BUY UP';reason='bull '+bull.toFixed(2)+' vs bear '+bear.toFixed(2);}
   else{decision='BUY DOWN';reason='bear '+bear.toFixed(2)+' vs bull '+bull.toFixed(2);}
-  renderPredCard({decision,reason,bull,bear,conf,quality,edge,signals:{s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11,s12,chop}});
+
+  // ── LOCK THIS DECISION FOR THE ENTIRE WINDOW ──────────────
+  lockedDecision = {
+    wts: currentMarket.wts,
+    decision, reason, bull, bear, conf, quality, edge,
+    startPrice: currentMarket.startPrice,
+    signals: {s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11,s12,chop},
+    resolved: false,
+    lockedAt: Date.now()
+  };
+
+  console.log('[ENGINE] LOCKED:', decision, '| edge:', edge.toFixed(2), '| conf:', (conf*100).toFixed(0)+'%');
+
+  // Add as PENDING in history immediately
+  const time=new Date(currentMarket.wts*1000).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'America/New_York'});
+  // Remove any existing pending entry for this window
+  tracker.history = tracker.history.filter(h => h.window !== currentMarket.wts);
+  tracker.history.push({ time, decision, result: 'PENDING', window: currentMarket.wts });
+  if(tracker.history.length>20) tracker.history.shift();
+  saveTracker();
+  renderTracker();
+
+  renderPredCard(lockedDecision);
 }
 
-function renderPredCard({decision,reason,bull,bear,conf,quality,edge,signals:{s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11,s12,chop}}){
+function renderPredCard({decision,reason,bull,bear,conf,quality,edge,signals:{s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11,s12,chop},lockedAt}){
   const card=document.getElementById('engine-card');
   if(!card)return;
   const W=ENGINE_CFG.WEIGHTS;
@@ -499,18 +677,16 @@ function renderPredCard({decision,reason,bull,bear,conf,quality,edge,signals:{s1
   const lbl=decision==='BUY UP'?'YES · UP':decision==='BUY DOWN'?'NO · DOWN':'NO TRADE';
   const sublbl=decision==='BUY UP'?`Won't fall below $${fmt(currentMarket?.startPrice,2)}`:decision==='BUY DOWN'?`Won't beat $${fmt(currentMarket?.startPrice,2)}`:'Signals too mixed or weak';
   const confColor=dc==='up'?'var(--green)':dc==='down'?'var(--red)':'var(--amber)';
-  const ts=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true,timeZone:'America/New_York'})+' ET';
+  const lockedTime=lockedAt?new Date(lockedAt).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true,timeZone:'America/New_York'})+' ET':'—';
 
   function b(bull,bear){if(bull>0&&bull>=bear)return`<span class="sig-badge sb">BULL ${bull.toFixed(1)}</span>`;if(bear>0&&bear>bull)return`<span class="sig-badge sr">BEAR ${bear.toFixed(1)}</span>`;return`<span class="sig-badge sn">NEUT</span>`;}
   function mb(mod){if(!mod)return`<span class="sig-badge sn">—</span>`;if(mod>0)return`<span class="sig-badge sb">+${(mod*100).toFixed(0)}%</span>`;return`<span class="sig-badge sr">${(mod*100).toFixed(0)}%</span>`;}
-
-  document.getElementById('engine-updated-ts').textContent=ts+' · next in '+(Math.round(ENGINE_CFG.ENGINE_INTERVAL/1000))+'s';
 
   card.className='pred-card '+dc;
   card.innerHTML=`
     <div class="pred-head">
       <div class="pred-head-left">Signal Engine</div>
-      <div class="pred-head-right" id="engine-updated-ts">${ts} · next <span id="eng-countdown">${Math.round(ENGINE_CFG.ENGINE_INTERVAL/1000)}s</span></div>
+      <div class="pred-head-right">Locked ${lockedTime} · <span id="eng-countdown">—</span> left</div>
     </div>
 
     <div class="pred-main ${dc}">
@@ -539,12 +715,12 @@ function renderPredCard({decision,reason,bull,bear,conf,quality,edge,signals:{s1
     </div>
 
     <div class="next-check">
-      <div class="nc-label">Next prediction check</div>
-      <div class="nc-time" id="eng-next-display">—</div>
+      <div class="nc-label">Window closes in</div>
+      <div class="nc-time" id="eng-window-left">—</div>
     </div>
 
     <div class="signals-section">
-      <div class="signals-title">Signal Breakdown</div>
+      <div class="signals-title">Signal Breakdown · locked at window open</div>
       <div class="sig-list">
         <div class="sig-row"><div class="sig-left"><div class="sig-name">Window Delta</div><div class="sig-note">${s1.note}</div></div>${b(s1.bull*W.windowDelta,s1.bear*W.windowDelta)}</div>
         <div class="sig-row"><div class="sig-left"><div class="sig-name">1m Momentum</div><div class="sig-note">${s2.note}</div></div>${b(s2.bull*W.momentum1m,s2.bear*W.momentum1m)}</div>
@@ -571,17 +747,18 @@ let lastEngineRun=0;
 function startEngine(){
   if(engineTimer)clearInterval(engineTimer);
   runDecisionEngine();
+  // Keep checking every 15s — but engine will skip re-evaluation if window hasn't changed
   engineTimer=setInterval(runDecisionEngine,ENGINE_CFG.ENGINE_INTERVAL);
 }
 
-// Countdown ticker
+// Live countdown showing time left in window
 setInterval(()=>{
-  const el=document.getElementById('eng-countdown');
-  const nd=document.getElementById('eng-next-display');
-  if(!lastEngineRun)return;
-  const s=Math.max(0,Math.round((ENGINE_CFG.ENGINE_INTERVAL-(Date.now()-lastEngineRun))/1000));
-  if(el)el.textContent=s+'s';
-  if(nd)nd.textContent=s+'s';
+  if(!currentMarket)return;
+  const secsLeft=Math.max(0,currentMarket.endSec-Math.floor(Date.now()/1000));
+  const wl=document.getElementById('eng-window-left');
+  const cd=document.getElementById('eng-countdown');
+  if(wl) wl.textContent=fmtT(secsLeft);
+  if(cd) cd.textContent=fmtT(secsLeft);
 },1000);
 
 // Watchdog
@@ -591,7 +768,11 @@ setInterval(()=>{
   }
 },20000);
 
+// Initial render of tracker
+renderTracker();
 setTimeout(startEngine,3000);
+
+
 </script>
 </body>
 </html>
