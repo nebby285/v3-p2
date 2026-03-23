@@ -29,7 +29,30 @@
   --radius:14px;
 }
 html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased;max-width:480px;margin:0 auto;padding:0 0 60px}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased;padding:0 0 60px}
+
+/* ── DESKTOP LAYOUT ── */
+@media(min-width:860px){
+  #topbar{padding:0 32px;height:52px}
+  #hero{padding:24px 32px 20px}
+  #page-body{
+    display:grid;grid-template-columns:1fr 1fr;
+    max-width:1100px;margin:0 auto;
+    align-items:start;gap:0;
+  }
+  .left-col{padding:0 8px 0 16px}
+  .right-col{padding:0 16px 0 8px;border-left:1px solid var(--border)}
+  .sec-label{padding:16px 4px 8px}
+  .card,.pred-card,.tracker-card{margin:0 0 10px}
+  .disclaimer{margin:0 0 10px}
+}
+
+@media(max-width:859px){
+  body{max-width:480px;margin:0 auto}
+  #page-body{display:block}
+  .left-col,.right-col{padding:0}
+  .sec-label{padding:18px 18px 8px}
+}
 
 /* ── TOPBAR ── */
 #topbar{
@@ -96,16 +119,16 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .timer-fill{height:100%;border-radius:2px;transition:width 1s linear}
 
 /* odds */
-.odds-grid{padding:12px 16px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.odd{border-radius:10px;padding:14px;border:1px solid;display:flex;flex-direction:column;gap:6px}
+.odds-grid{padding:10px 16px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.odd{border-radius:8px;padding:10px 12px;border:1px solid;display:flex;flex-direction:column;gap:4px}
 .odd.yes{background:var(--gd);border-color:var(--gb)}
 .odd.no{background:var(--rd);border-color:var(--rb)}
 .odd-top{display:flex;align-items:center;justify-content:space-between}
-.odd-dir{font-size:11px;font-weight:800;letter-spacing:-.2px}
+.odd-dir{font-size:10px;font-weight:800;letter-spacing:-.2px}
 .odd.yes .odd-dir{color:var(--green)}
 .odd.no .odd-dir{color:var(--red)}
 .odd-pct{font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--sub)}
-.odd-price{font-family:'JetBrains Mono',monospace;font-size:32px;font-weight:700;letter-spacing:-1.5px;line-height:1}
+.odd-price{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;letter-spacing:-1px;line-height:1}
 .odd.yes .odd-price{color:var(--green)}
 .odd.no .odd-price{color:var(--red)}
 .odd-unit{font-size:9px;color:var(--sub);font-family:'JetBrains Mono',monospace}
@@ -225,20 +248,11 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
   </div>
 </div>
 
+<div id="page-body">
+<div class="left-col">
 <div class="sec-label">Market</div>
 <div id="main">
   <div class="loading"><div class="spinner"></div><div>Connecting to live feed...</div></div>
-</div>
-
-<div class="sec-label">Prediction</div>
-<div id="engine-wrap">
-  <div class="pred-card" id="engine-card">
-    <div class="pred-head">
-      <div class="pred-head-left">Signal Engine</div>
-      <div class="pred-head-right" id="engine-updated-ts">—</div>
-    </div>
-    <div class="loading"><div class="spinner"></div><div>Analysing market...</div></div>
-  </div>
 </div>
 
 <div class="sec-label">Track Record</div>
@@ -248,7 +262,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
       <div class="tracker-head-title">Signal Performance</div>
       <div style="font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace" id="tracker-session">Session</div>
     </div>
-    <div class="tracker-stats" id="tracker-stats">
+    <div class="tracker-stats">
       <div class="ts-cell"><div class="ts-label">Wins</div><div class="ts-val win" id="t-wins">0</div></div>
       <div class="ts-cell"><div class="ts-label">Losses</div><div class="ts-val loss" id="t-losses">0</div></div>
       <div class="ts-cell"><div class="ts-label">Skipped</div><div class="ts-val skip" id="t-skips">0</div></div>
@@ -263,9 +277,24 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
   </div>
 </div>
 
-<div class="disclaimer">
+<div class="disclaimer" style="margin-top:10px">
   <div class="disclaimer-txt">Not financial advice. Automated signal engine for informational purposes only. Past performance does not guarantee future results.</div>
 </div>
+</div><!-- left-col -->
+
+<div class="right-col">
+<div class="sec-label">Prediction</div>
+<div id="engine-wrap">
+  <div class="pred-card" id="engine-card">
+    <div class="pred-head">
+      <div class="pred-head-left">Signal Engine</div>
+      <div class="pred-head-right" id="engine-updated-ts">—</div>
+    </div>
+    <div class="loading"><div class="spinner"></div><div>Analysing market...</div></div>
+  </div>
+</div>
+</div><!-- right-col -->
+</div><!-- page-body -->
 
 <script>
 const RAILWAY_WS='wss://v3-production-1fb6.up.railway.app';
