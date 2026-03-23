@@ -162,10 +162,7 @@ header {
 .otile.yes .opayout strong { color: var(--green); font-weight: 700; }
 .otile.no  .opayout strong { color: var(--red);   font-weight: 700; }
 
-@keyframes flash-g { 0%{background:rgba(0,230,118,0.2)} 100%{background:var(--green-dim)} }
-@keyframes flash-r { 0%{background:rgba(255,23,68,0.2)}  100%{background:var(--red-dim)} }
-.otile.yes.flash { animation: flash-g 0.35s ease-out; }
-.otile.no.flash  { animation: flash-r 0.35s ease-out; }
+
 
 /* LOADING */
 .loading { display: flex; flex-direction: column; align-items: center; padding: 80px 20px; gap: 14px; color: var(--muted); font-size: 13px; }
@@ -238,7 +235,7 @@ function updateOdds(yes,no) {
   nPct.textContent=Math.round(no*100)+'% implied';
   yPay.innerHTML=`Pays <strong>${yes>0?(1/yes).toFixed(2):'—'}x</strong> if BTC finishes higher`;
   nPay.innerHTML=`Pays <strong>${no>0?(1/no).toFixed(2):'—'}x</strong> if BTC finishes lower`;
-  [yT,nT].forEach(t=>{ t?.classList.remove('flash'); void t?.offsetWidth; t?.classList.add('flash'); });
+
 }
 
 function updateDir() {
