@@ -376,6 +376,500 @@ function connect() {
 }
 
 connect();
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DECISION ENGINE — invisible, zero UI changes
+// Analyzes short-term BTC direction and outputs BUY UP / BUY DOWN / NO TRADE
+// All output goes to browser console only (open DevTools → Console to inspect)
+//
+// SCORING SYSTEM:
+//   bullishScore  — weighted sum of bullish signals
+//   bearishScore  — weighted sum of bearish signals
+//   confidence    — how strong/clean the signal is (0–1)
+//   tradeQuality  — penalizes choppy, low-volume, ambiguous conditions
+//
+// SIGNAL WEIGHTS (tunable — higher = more influence):
+//   Window delta (vs price to beat) ......... 7.0  (dominant signal)
+//   1m momentum ............................ 2.5
+//   3m trend consistency ................... 2.0
+//   5m trend bias .......................... 1.5
+//   Rate of change acceleration ............ 1.5
+//   EMA9/EMA21 crossover ................... 1.0
+//   RSI extreme ............................ 1.5
+//   Volume surge ........................... 1.0
+//   Market odds pressure (YES vs NO price). 1.5
+//   Mean reversion signal .................. 1.0
+//   Fake breakout rejection ................ 1.5
+//   Time-in-window bias .................... 1.0
+//
+// THRESHOLDS (tunable):
+//   MIN_CONFIDENCE   = 0.35  — below this → NO TRADE
+//   MIN_EDGE         = 1.5   — score gap needed to call a direction
+//   MIN_TRADE_QUALITY= 0.4   — below this → NO TRADE (too choppy)
+//   ENGINE_INTERVAL  = 15000 — re-evaluate every 15 seconds
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+const ENGINE_CFG = {
+  MIN_CONFIDENCE:    0.35,
+  MIN_EDGE:          1.5,
+  MIN_TRADE_QUALITY: 0.40,
+  ENGINE_INTERVAL:   15000,   // ms between full evaluations
+  CANDLE_LIMIT:      30,       // how many 1m candles to fetch
+  WEIGHTS: {
+    windowDelta:     7.0,
+    momentum1m:      2.5,
+    trend3m:         2.0,
+    trend5m:         1.5,
+    acceleration:    1.5,
+    emaCross:        1.0,
+    rsiExtreme:      1.5,
+    volumeSurge:     1.0,
+    marketOdds:      1.5,
+    meanReversion:   1.0,
+    fakeBreakout:    1.5,
+    timeInWindow:    1.0,
+  }
+};
+
+// ── CANDLE CACHE ──────────────────────────────────────────────────────────────
+let cachedCandles  = [];   // last N 1m Binance candles
+let lastCandleFetch = 0;
+let engineTimer    = null;
+
+// ── FETCH BINANCE 1m CANDLES ──────────────────────────────────────────────────
+async function fetchCandles(limit = ENGINE_CFG.CANDLE_LIMIT) {
+  try {
+    const url = `https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1m&limit=${limit}`;
+    const r   = await fetch(url, { signal: AbortSignal.timeout(5000) });
+    const raw = await r.json();
+    // Map to { ts, open, high, low, close, volume }
+    return raw.map(c => ({
+      ts:     c[0] / 1000,
+      open:   parseFloat(c[1]),
+      high:   parseFloat(c[2]),
+      low:    parseFloat(c[3]),
+      close:  parseFloat(c[4]),
+      volume: parseFloat(c[5]),
+    }));
+  } catch(e) {
+    console.warn('[ENGINE] candle fetch failed:', e.message);
+    return null;
+  }
+}
+
+// ── MATH HELPERS ──────────────────────────────────────────────────────────────
+function ema(values, period) {
+  const k = 2 / (period + 1);
+  let e = values[0];
+  for (let i = 1; i < values.length; i++) e = values[i] * k + e * (1 - k);
+  return e;
+}
+
+function rsi(closes, period = 14) {
+  if (closes.length < period + 1) return 50;
+  let gains = 0, losses = 0;
+  for (let i = closes.length - period; i < closes.length; i++) {
+    const diff = closes[i] - closes[i-1];
+    if (diff > 0) gains  += diff;
+    else          losses -= diff;
+  }
+  const avgGain = gains  / period;
+  const avgLoss = losses / period;
+  if (avgLoss === 0) return 100;
+  const rs = avgGain / avgLoss;
+  return 100 - (100 / (1 + rs));
+}
+
+function avg(arr) { return arr.reduce((a,b) => a+b, 0) / arr.length; }
+function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+
+// ── SIGNAL FUNCTIONS ──────────────────────────────────────────────────────────
+
+// 1. WINDOW DELTA — is BTC above or below the price to beat?
+// Returns { bull, bear } contribution (dominant signal)
+function signalWindowDelta(currentPrice, startPrice) {
+  if (!currentPrice || !startPrice) return { bull: 0, bear: 0, note: 'no data' };
+  const deltaPct = ((currentPrice - startPrice) / startPrice) * 100;
+
+  let bull = 0, bear = 0;
+  if      (deltaPct >  0.10) { bull = 1.0; }        // strongly above
+  else if (deltaPct >  0.02) { bull = 0.7; }        // clearly above
+  else if (deltaPct >  0.005){ bull = 0.4; }        // slightly above
+  else if (deltaPct < -0.10) { bear = 1.0; }        // strongly below
+  else if (deltaPct < -0.02) { bear = 0.7; }        // clearly below
+  else if (deltaPct < -0.005){ bear = 0.4; }        // slightly below
+  // near zero: no contribution
+
+  return { bull, bear, deltaPct: deltaPct.toFixed(4), note: `${deltaPct.toFixed(4)}% vs PTB` };
+}
+
+// 2. 1m MOMENTUM — direction of last 1–2 candles
+function signalMomentum1m(candles) {
+  if (candles.length < 3) return { bull: 0, bear: 0, note: 'insufficient candles' };
+  const last  = candles[candles.length - 1];
+  const prev  = candles[candles.length - 2];
+  const prev2 = candles[candles.length - 3];
+
+  const move1 = last.close  - last.open;
+  const move2 = prev.close  - prev.open;
+  const move3 = prev2.close - prev2.open;
+
+  // Both recent candles bullish
+  if (move1 > 0 && move2 > 0) return { bull: 1.0, bear: 0, note: '2 consecutive bull candles' };
+  if (move1 < 0 && move2 < 0) return { bull: 0, bear: 1.0, note: '2 consecutive bear candles' };
+  // Last candle direction
+  if (move1 > 0) return { bull: 0.5, bear: 0, note: 'last candle bullish' };
+  if (move1 < 0) return { bull: 0, bear: 0.5, note: 'last candle bearish' };
+  return { bull: 0, bear: 0, note: 'doji/flat' };
+}
+
+// 3. 3m TREND CONSISTENCY — are the last 3 candles mostly one direction?
+function signalTrend3m(candles) {
+  if (candles.length < 4) return { bull: 0, bear: 0, note: 'insufficient candles' };
+  const slice = candles.slice(-3);
+  const bullCount = slice.filter(c => c.close > c.open).length;
+  const bearCount = slice.filter(c => c.close < c.open).length;
+
+  if (bullCount === 3) return { bull: 1.0, bear: 0, note: '3/3 bull candles' };
+  if (bearCount === 3) return { bull: 0, bear: 1.0, note: '3/3 bear candles' };
+  if (bullCount === 2) return { bull: 0.5, bear: 0, note: '2/3 bull' };
+  if (bearCount === 2) return { bull: 0, bear: 0.5, note: '2/3 bear' };
+  return { bull: 0, bear: 0, note: 'mixed 3m' };
+}
+
+// 4. 5m TREND BIAS — close vs open 5 candles ago
+function signalTrend5m(candles) {
+  if (candles.length < 6) return { bull: 0, bear: 0, note: 'insufficient candles' };
+  const oldest = candles[candles.length - 5];
+  const latest = candles[candles.length - 1];
+  const move   = latest.close - oldest.open;
+  const movePct = (move / oldest.open) * 100;
+
+  if      (movePct >  0.08) return { bull: 1.0, bear: 0, note: `5m up ${movePct.toFixed(3)}%` };
+  else if (movePct >  0.02) return { bull: 0.6, bear: 0, note: `5m up ${movePct.toFixed(3)}%` };
+  else if (movePct < -0.08) return { bull: 0, bear: 1.0, note: `5m down ${movePct.toFixed(3)}%` };
+  else if (movePct < -0.02) return { bull: 0, bear: 0.6, note: `5m down ${movePct.toFixed(3)}%` };
+  return { bull: 0, bear: 0, note: `5m flat ${movePct.toFixed(3)}%` };
+}
+
+// 5. ACCELERATION — is momentum speeding up or slowing down?
+function signalAcceleration(candles) {
+  if (candles.length < 4) return { bull: 0, bear: 0, note: 'insufficient' };
+  const c = candles;
+  const n = c.length;
+  const move1 = c[n-1].close - c[n-1].open;   // most recent
+  const move2 = c[n-2].close - c[n-2].open;   // one before
+
+  const accelerating = Math.abs(move1) > Math.abs(move2);
+  const sameDir      = (move1 > 0) === (move2 > 0);
+
+  if (accelerating && sameDir && move1 > 0) return { bull: 1.0, bear: 0, note: 'bullish acceleration' };
+  if (accelerating && sameDir && move1 < 0) return { bull: 0, bear: 1.0, note: 'bearish acceleration' };
+  if (!accelerating && sameDir && move1 > 0) return { bull: 0.2, bear: 0, note: 'bullish deceleration' };
+  if (!accelerating && sameDir && move1 < 0) return { bull: 0, bear: 0.2, note: 'bearish deceleration' };
+  if (!sameDir) return { bull: 0, bear: 0, note: 'direction reversal — caution' };
+  return { bull: 0, bear: 0, note: 'flat acceleration' };
+}
+
+// 6. EMA CROSSOVER — EMA9 vs EMA21 on closes
+function signalEMACross(candles) {
+  if (candles.length < 22) return { bull: 0, bear: 0, note: 'insufficient for EMA' };
+  const closes = candles.map(c => c.close);
+  const e9  = ema(closes.slice(-9),  9);
+  const e21 = ema(closes.slice(-21), 21);
+  const gap = ((e9 - e21) / e21) * 100;
+
+  if (gap >  0.02) return { bull: 1.0, bear: 0, note: `EMA9 > EMA21 by ${gap.toFixed(4)}%` };
+  if (gap < -0.02) return { bull: 0, bear: 1.0, note: `EMA9 < EMA21 by ${Math.abs(gap).toFixed(4)}%` };
+  return { bull: 0, bear: 0, note: `EMA crossover flat gap=${gap.toFixed(4)}%` };
+}
+
+// 7. RSI EXTREME — overbought/oversold on 14-period
+function signalRSI(candles) {
+  if (candles.length < 16) return { bull: 0, bear: 0, note: 'insufficient for RSI' };
+  const closes = candles.map(c => c.close);
+  const r = rsi(closes, 14);
+
+  if      (r < 25) return { bull: 1.0, bear: 0, note: `RSI oversold ${r.toFixed(1)} → mean reversion UP` };
+  else if (r < 35) return { bull: 0.5, bear: 0, note: `RSI low ${r.toFixed(1)}` };
+  else if (r > 75) return { bull: 0, bear: 1.0, note: `RSI overbought ${r.toFixed(1)} → mean reversion DOWN` };
+  else if (r > 65) return { bull: 0, bear: 0.5, note: `RSI high ${r.toFixed(1)}` };
+  return { bull: 0, bear: 0, note: `RSI neutral ${r.toFixed(1)}` };
+}
+
+// 8. VOLUME SURGE — is volume increasing in direction of move?
+function signalVolumeSurge(candles) {
+  if (candles.length < 7) return { confidence_mod: 0, note: 'insufficient' };
+  const recent = candles.slice(-3).map(c => c.volume);
+  const prior  = candles.slice(-6, -3).map(c => c.volume);
+  const recentAvg = avg(recent);
+  const priorAvg  = avg(prior);
+  const ratio = recentAvg / priorAvg;
+
+  // High volume confirms direction, low volume reduces confidence
+  if (ratio > 1.5) return { confidence_mod: +0.15, note: `volume surge ${ratio.toFixed(2)}x — confirms move` };
+  if (ratio > 1.2) return { confidence_mod: +0.07, note: `volume elevated ${ratio.toFixed(2)}x` };
+  if (ratio < 0.6) return { confidence_mod: -0.15, note: `volume dry ${ratio.toFixed(2)}x — weak signal` };
+  return { confidence_mod: 0, note: `volume normal ${ratio.toFixed(2)}x` };
+}
+
+// 9. MARKET ODDS PRESSURE — Polymarket YES/NO price tells us where smart money is
+function signalMarketOdds(yesPrice, noPrice) {
+  if (!yesPrice || !noPrice) return { bull: 0, bear: 0, note: 'no odds data' };
+  // If YES > 0.55, market is pricing in a likely UP
+  // If NO > 0.55, market is pricing in a likely DOWN
+  const yp = yesPrice, np = noPrice;
+
+  if      (yp > 0.70) return { bull: 1.0, bear: 0, note: `YES strongly bid ${Math.round(yp*100)}¢` };
+  else if (yp > 0.55) return { bull: 0.6, bear: 0, note: `YES leaning ${Math.round(yp*100)}¢` };
+  else if (np > 0.70) return { bull: 0, bear: 1.0, note: `NO strongly bid ${Math.round(np*100)}¢` };
+  else if (np > 0.55) return { bull: 0, bear: 0.6, note: `NO leaning ${Math.round(np*100)}¢` };
+  return { bull: 0, bear: 0, note: `market even YES=${Math.round(yp*100)}¢ NO=${Math.round(np*100)}¢` };
+}
+
+// 10. MEAN REVERSION — has price moved sharply? expect pullback
+function signalMeanReversion(candles, currentPrice) {
+  if (candles.length < 10) return { bull: 0, bear: 0, note: 'insufficient' };
+  const closes = candles.slice(-10).map(c => c.close);
+  const mean   = avg(closes);
+  const devPct = ((currentPrice - mean) / mean) * 100;
+
+  // Sharp extension from mean → reversion likely
+  if      (devPct >  0.15) return { bull: 0, bear: 0.8, note: `extended +${devPct.toFixed(3)}% above mean → reversion risk` };
+  else if (devPct >  0.08) return { bull: 0, bear: 0.4, note: `above mean +${devPct.toFixed(3)}%` };
+  else if (devPct < -0.15) return { bull: 0.8, bear: 0, note: `extended ${devPct.toFixed(3)}% below mean → bounce risk` };
+  else if (devPct < -0.08) return { bull: 0.4, bear: 0, note: `below mean ${devPct.toFixed(3)}%` };
+  return { bull: 0, bear: 0, note: `near mean dev=${devPct.toFixed(3)}%` };
+}
+
+// 11. FAKE BREAKOUT DETECTION — wick rejection signals reversal
+function signalFakeBreakout(candles) {
+  if (candles.length < 3) return { bull: 0, bear: 0, note: 'insufficient' };
+  const last = candles[candles.length - 1];
+  const body  = Math.abs(last.close - last.open);
+  const range = last.high - last.low;
+  if (range === 0) return { bull: 0, bear: 0, note: 'no range' };
+
+  const upperWick = last.high  - Math.max(last.open, last.close);
+  const lowerWick = Math.min(last.open, last.close) - last.low;
+  const upperRatio = upperWick / range;
+  const lowerRatio = lowerWick / range;
+
+  // Large upper wick = bearish rejection
+  if (upperRatio > 0.5 && body / range < 0.3) return { bull: 0, bear: 1.0, note: `bearish wick rejection upper=${(upperRatio*100).toFixed(0)}%` };
+  // Large lower wick = bullish rejection
+  if (lowerRatio > 0.5 && body / range < 0.3) return { bull: 1.0, bear: 0, note: `bullish wick rejection lower=${(lowerRatio*100).toFixed(0)}%` };
+  // Small wicks — trend candle
+  if (body / range > 0.7) {
+    if (last.close > last.open) return { bull: 0.5, bear: 0, note: 'strong bull trend candle' };
+    else                        return { bull: 0, bear: 0.5, note: 'strong bear trend candle' };
+  }
+  return { bull: 0, bear: 0, note: `normal candle body=${(body/range*100).toFixed(0)}%` };
+}
+
+// 12. TIME IN WINDOW — early window favors trend continuation, late window favors caution
+function signalTimeInWindow(secsLeft, totalSecs = 300) {
+  const elapsed = totalSecs - secsLeft;
+  const elapsedPct = elapsed / totalSecs;
+
+  // Very late in window (last 30s) — price direction likely locked in
+  if (elapsedPct > 0.90) return { confidence_mod: +0.1, note: `last 10% of window — direction locked` };
+  // Too early — less information
+  if (elapsedPct < 0.15) return { confidence_mod: -0.1, note: `early window — low info` };
+  // Sweet spot: 50–85% through = best signal quality
+  if (elapsedPct > 0.50) return { confidence_mod: +0.05, note: `mid-late window — good signal` };
+  return { confidence_mod: 0, note: `window ${(elapsedPct*100).toFixed(0)}% elapsed` };
+}
+
+// ── CHOPPINESS DETECTOR — reduces confidence in choppy markets ─────────────
+function measureChoppiness(candles) {
+  if (candles.length < 5) return { chopScore: 0.5, note: 'insufficient' };
+  const slice = candles.slice(-5);
+  let dirChanges = 0;
+  for (let i = 1; i < slice.length; i++) {
+    const prev = slice[i-1].close - slice[i-1].open;
+    const curr = slice[i].close   - slice[i].open;
+    if ((prev > 0 && curr < 0) || (prev < 0 && curr > 0)) dirChanges++;
+  }
+  // 0 changes = trending, 4 changes = very choppy
+  const chopScore = dirChanges / 4;
+  return { chopScore, note: `${dirChanges}/4 direction changes` };
+}
+
+// ── MAIN ENGINE EVALUATION ─────────────────────────────────────────────────────
+async function runDecisionEngine() {
+  // Need live data to proceed
+  if (!currentMarket || !btcPrice || !latestOdds) {
+    console.log('[ENGINE] waiting for market data...');
+    return;
+  }
+  if (!currentMarket.startPrice) {
+    console.log('[ENGINE] no price to beat yet');
+    return;
+  }
+
+  const secsLeft = Math.max(0, currentMarket.endSec - Math.floor(Date.now() / 1000));
+  if (secsLeft <= 0) { console.log('[ENGINE] window settled'); return; }
+
+  // Fetch fresh candles if cache is stale (>20s old)
+  const now = Date.now();
+  if (now - lastCandleFetch > 20000 || cachedCandles.length === 0) {
+    const candles = await fetchCandles(ENGINE_CFG.CANDLE_LIMIT);
+    if (candles) { cachedCandles = candles; lastCandleFetch = now; }
+  }
+
+  const candles    = cachedCandles;
+  const W          = ENGINE_CFG.WEIGHTS;
+  const startPrice = currentMarket.startPrice;
+  const yesPrice   = latestOdds.yes;
+  const noPrice    = latestOdds.no;
+
+  // ── RUN ALL SIGNALS ─────────────────────────────────────────────────────────
+  const s1  = signalWindowDelta(btcPrice, startPrice);
+  const s2  = signalMomentum1m(candles);
+  const s3  = signalTrend3m(candles);
+  const s4  = signalTrend5m(candles);
+  const s5  = signalAcceleration(candles);
+  const s6  = signalEMACross(candles);
+  const s7  = signalRSI(candles);
+  const s8  = signalVolumeSurge(candles);        // confidence modifier
+  const s9  = signalMarketOdds(yesPrice, noPrice);
+  const s10 = signalMeanReversion(candles, btcPrice);
+  const s11 = signalFakeBreakout(candles);
+  const s12 = signalTimeInWindow(secsLeft);      // confidence modifier
+  const chop = measureChoppiness(candles);
+
+  // ── WEIGHTED SCORES ─────────────────────────────────────────────────────────
+  let bullishScore = 0, bearishScore = 0;
+
+  bullishScore += s1.bull  * W.windowDelta;
+  bearishScore += s1.bear  * W.windowDelta;
+  bullishScore += s2.bull  * W.momentum1m;
+  bearishScore += s2.bear  * W.momentum1m;
+  bullishScore += s3.bull  * W.trend3m;
+  bearishScore += s3.bear  * W.trend3m;
+  bullishScore += s4.bull  * W.trend5m;
+  bearishScore += s4.bear  * W.trend5m;
+  bullishScore += s5.bull  * W.acceleration;
+  bearishScore += s5.bear  * W.acceleration;
+  bullishScore += s6.bull  * W.emaCross;
+  bearishScore += s6.bear  * W.emaCross;
+  bullishScore += s7.bull  * W.rsiExtreme;
+  bearishScore += s7.bear  * W.rsiExtreme;
+  bullishScore += s9.bull  * W.marketOdds;
+  bearishScore += s9.bear  * W.marketOdds;
+  bullishScore += s10.bull * W.meanReversion;
+  bearishScore += s10.bear * W.meanReversion;
+  bullishScore += s11.bull * W.fakeBreakout;
+  bearishScore += s11.bear * W.fakeBreakout;
+
+  // ── CONFIDENCE CALCULATION ──────────────────────────────────────────────────
+  const totalScore = bullishScore + bearishScore;
+  const edge       = Math.abs(bullishScore - bearishScore);
+  const maxScore   = Object.values(W).reduce((a,b) => a+b, 0); // max possible
+
+  // Base confidence = how dominant one side is
+  let confidence = totalScore > 0 ? edge / totalScore : 0;
+
+  // Apply modifiers
+  confidence += (s8.confidence_mod  || 0);
+  confidence += (s12.confidence_mod || 0);
+  confidence -= chop.chopScore * 0.2;   // choppiness reduces confidence
+  confidence  = clamp(confidence, 0, 1);
+
+  // ── TRADE QUALITY ───────────────────────────────────────────────────────────
+  // Low total score = weak signals overall
+  const signalStrength = totalScore / maxScore;
+  const tradeQuality   = clamp((signalStrength + confidence) / 2, 0, 1);
+
+  // ── DECISION ────────────────────────────────────────────────────────────────
+  let decision = 'NO TRADE';
+  let reason   = '';
+
+  if (confidence < ENGINE_CFG.MIN_CONFIDENCE) {
+    decision = 'NO TRADE';
+    reason   = `confidence too low (${(confidence*100).toFixed(1)}% < ${ENGINE_CFG.MIN_CONFIDENCE*100}%)`;
+  } else if (tradeQuality < ENGINE_CFG.MIN_TRADE_QUALITY) {
+    decision = 'NO TRADE';
+    reason   = `trade quality too low (${(tradeQuality*100).toFixed(1)}% < ${ENGINE_CFG.MIN_TRADE_QUALITY*100}%)`;
+  } else if (edge < ENGINE_CFG.MIN_EDGE) {
+    decision = 'NO TRADE';
+    reason   = `edge too small (${edge.toFixed(2)} < ${ENGINE_CFG.MIN_EDGE})`;
+  } else if (bullishScore > bearishScore) {
+    decision = 'BUY UP';
+    reason   = `bull dominates ${bullishScore.toFixed(2)} vs bear ${bearishScore.toFixed(2)}`;
+  } else {
+    decision = 'BUY DOWN';
+    reason   = `bear dominates ${bearishScore.toFixed(2)} vs bull ${bullishScore.toFixed(2)}`;
+  }
+
+  // ── FULL BREAKDOWN (inspect in DevTools console) ────────────────────────────
+  const breakdown = {
+    '═══ DECISION ENGINE ═══': `${decision}`,
+    timestamp:      new Date().toISOString(),
+    secsLeftInWindow: secsLeft,
+    currentPrice:   btcPrice,
+    priceToBeat:    startPrice,
+    windowDeltaPct: s1.deltaPct + '%',
+    '─── SCORES ───': '',
+    bullishScore:   +bullishScore.toFixed(3),
+    bearishScore:   +bearishScore.toFixed(3),
+    edge:           +edge.toFixed(3),
+    confidence:     +(confidence*100).toFixed(1) + '%',
+    tradeQuality:   +(tradeQuality*100).toFixed(1) + '%',
+    signalStrength: +(signalStrength*100).toFixed(1) + '%',
+    '─── SIGNALS ───': '',
+    s1_windowDelta:   `bull=${s1.bull} bear=${s1.bear} | ${s1.note}`,
+    s2_momentum1m:    `bull=${s2.bull} bear=${s2.bear} | ${s2.note}`,
+    s3_trend3m:       `bull=${s3.bull} bear=${s3.bear} | ${s3.note}`,
+    s4_trend5m:       `bull=${s4.bull} bear=${s4.bear} | ${s4.note}`,
+    s5_acceleration:  `bull=${s5.bull} bear=${s5.bear} | ${s5.note}`,
+    s6_emaCross:      `bull=${s6.bull} bear=${s6.bear} | ${s6.note}`,
+    s7_rsi:           `bull=${s7.bull} bear=${s7.bear} | ${s7.note}`,
+    s8_volume:        `mod=${s8.confidence_mod} | ${s8.note}`,
+    s9_marketOdds:    `bull=${s9.bull} bear=${s9.bear} | ${s9.note}`,
+    s10_meanRev:      `bull=${s10.bull} bear=${s10.bear} | ${s10.note}`,
+    s11_fakeBreakout: `bull=${s11.bull} bear=${s11.bear} | ${s11.note}`,
+    s12_timeInWindow: `mod=${s12.confidence_mod} | ${s12.note}`,
+    s_choppiness:     chop.note,
+    '─── DECISION ───': '',
+    DECISION:       decision,
+    reason:         reason,
+  };
+
+  console.log(`%c[ENGINE] ═══ ${decision} ═══`, 
+    decision === 'BUY UP'   ? 'color:#00e676;font-weight:bold;font-size:14px' :
+    decision === 'BUY DOWN' ? 'color:#ff1744;font-weight:bold;font-size:14px' :
+                              'color:#ff9800;font-weight:bold;font-size:14px'
+  );
+  console.table(breakdown);
+
+  // Store on window for external access / future UI integration
+  window.__ENGINE_RESULT__ = {
+    decision, reason, bullishScore, bearishScore,
+    confidence, tradeQuality, edge, signals: breakdown
+  };
+
+  return window.__ENGINE_RESULT__;
+}
+
+// ── START ENGINE — runs every 15 seconds ──────────────────────────────────────
+function startEngine() {
+  if (engineTimer) clearInterval(engineTimer);
+  // Initial run after 3s (wait for first market data)
+  setTimeout(runDecisionEngine, 3000);
+  engineTimer = setInterval(runDecisionEngine, ENGINE_CFG.ENGINE_INTERVAL);
+}
+
+// Re-run engine immediately whenever market or price updates
+const _origWsMsg = ws.onmessage;
+// Hook into existing WebSocket messages to trigger engine on new data
+const _origConnect = connect;
+
+// Start engine after connection established
+setTimeout(startEngine, 2000);
+
 </script>
 </body>
 </html>
