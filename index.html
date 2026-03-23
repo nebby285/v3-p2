@@ -488,17 +488,28 @@ let lockedDecision = null;
 // ── WIN/LOSS TRACKER ──────────────────────────────────────────
 let tracker = {
   wins: 0, losses: 0, skips: 0,
-  history: [] // last 10: { time, decision, result, window }
+  history: []
 };
 
-// Load tracker from sessionStorage so it survives refreshes within session
-try {
-  const saved = sessionStorage.getItem('btc_tracker');
-  if(saved) tracker = JSON.parse(saved);
-} catch(e) {}
+const TRACKER_URL = 'https://v3-production-1fb6.up.railway.app/tracker';
 
-function saveTracker() {
-  try { sessionStorage.setItem('btc_tracker', JSON.stringify(tracker)); } catch(e) {}
+// Load from server on page open — persists across browser closes & devices
+async function loadTracker() {
+  try {
+    const r = await fetch(TRACKER_URL, { signal: AbortSignal.timeout(5000) });
+    if (r.ok) { tracker = await r.json(); renderTracker(); }
+  } catch(e) { console.warn('[TRACKER] load failed, using empty'); }
+}
+
+// Save to server after every update
+async function saveTracker() {
+  try {
+    await fetch(TRACKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(tracker)
+    });
+  } catch(e) { console.warn('[TRACKER] save failed'); }
 }
 
 function renderTracker() {
@@ -769,7 +780,7 @@ setInterval(()=>{
 },20000);
 
 // Initial render of tracker
-renderTracker();
+loadTracker();
 setTimeout(startEngine,3000);
 
 
