@@ -493,6 +493,10 @@ function connect(){
     if(msg.type==='btc_price'){btcPrice=msg.price;setBTC(btcPrice);updateDir();}
     if(msg.type==='odds'){latestOdds={yes:msg.yes,no:msg.no};updateOdds(msg.yes,msg.no);}
     if(msg.type==='decision'){renderPredCard(msg.decision);}
+    if(msg.type==='engine_waiting'){
+      const el=document.getElementById('engine-wait-msg');
+      if(el){ const wait=30-msg.elapsed; el.textContent=wait>0?`Signal fires in ~${wait}s...`:'Evaluating signals...'; }
+    }
     if(msg.type==='tracker'){tracker=msg.tracker;renderTracker();}
   };
   ws.onclose=()=>{setWS('disconnected');setTimeout(connect,reconnDelay=Math.min(reconnDelay*1.5,15000));};
