@@ -609,21 +609,19 @@ function renderPredCard(d) {
   function mb(mod){if(!mod)return`<span class="sig-badge sn">—</span>`;if(mod>0)return`<span class="sig-badge sb">+${(mod*100).toFixed(0)}%</span>`;return`<span class="sig-badge sr">${(mod*100).toFixed(0)}%</span>`;}
 
   const s=signals||{};
+  const W2={windowDelta:8,momentum:2.5,trend3:2,trend5:1.5,ema:1,rsi:1.5,odds:2,wick:1.5,meanRev:1};
   const rows = s.s1 ? `
-    <div class="sig-row"><div class="sig-left"><div class="sig-name">Window Delta</div><div class="sig-note">${s.s1?.note||'—'}</div></div>${b((s.s1?.bull||0)*W.windowDelta,(s.s1?.bear||0)*W.windowDelta)}</div>
-    <div class="sig-row"><div class="sig-left"><div class="sig-name">Odds Divergence</div><div class="sig-note">${s.s13?.note||'—'}</div></div>${b((s.s13?.bull||0)*W.marketOddsDiv,(s.s13?.bear||0)*W.marketOddsDiv)}</div>
-    <div class="sig-row"><div class="sig-left"><div class="sig-name">1m Momentum</div><div class="sig-note">${s.s2?.note||'—'}</div></div>${b((s.s2?.bull||0)*W.momentum1m,(s.s2?.bear||0)*W.momentum1m)}</div>
-    <div class="sig-row"><div class="sig-left"><div class="sig-name">3m Trend</div><div class="sig-note">${s.s3?.note||'—'}</div></div>${b((s.s3?.bull||0)*W.trend3m,(s.s3?.bear||0)*W.trend3m)}</div>
-    <div class="sig-row"><div class="sig-left"><div class="sig-name">5m Bias</div><div class="sig-note">${s.s4?.note||'—'}</div></div>${b((s.s4?.bull||0)*W.trend5m,(s.s4?.bear||0)*W.trend5m)}</div>
-    <div class="sig-row"><div class="sig-left"><div class="sig-name">Acceleration</div><div class="sig-note">${s.s5?.note||'—'}</div></div>${b((s.s5?.bull||0)*W.acceleration,(s.s5?.bear||0)*W.acceleration)}</div>
-    <div class="sig-row"><div class="sig-left"><div class="sig-name">EMA 9/21</div><div class="sig-note">${s.s6?.note||'—'}</div></div>${b((s.s6?.bull||0)*W.emaCross,(s.s6?.bear||0)*W.emaCross)}</div>
-    <div class="sig-row"><div class="sig-left"><div class="sig-name">RSI (14)</div><div class="sig-note">${s.s7?.note||'—'}</div></div>${b((s.s7?.bull||0)*W.rsiExtreme,(s.s7?.bear||0)*W.rsiExtreme)}</div>
-    <div class="sig-row"><div class="sig-left"><div class="sig-name">Vol Regime</div><div class="sig-note">${s.s9?.note||'—'}</div></div>${b((s.s9?.bull||0)*W.volatilityRegime,(s.s9?.bear||0)*W.volatilityRegime)}</div>
-    <div class="sig-row"><div class="sig-left"><div class="sig-name">Wick Rejection</div><div class="sig-note">${s.s10?.note||'—'}</div></div>${b((s.s10?.bull||0)*W.fakeBreakout,(s.s10?.bear||0)*W.fakeBreakout)}</div>
-    <div class="sig-row"><div class="sig-left"><div class="sig-name">Mean Reversion</div><div class="sig-note">${s.s11?.note||'—'}</div></div>${b((s.s11?.bull||0)*W.meanReversion,(s.s11?.bear||0)*W.meanReversion)}</div>
-    <div class="sig-row"><div class="sig-left"><div class="sig-name">Volume</div><div class="sig-note">${s.s8?.note||'—'}</div></div>${mb(s.s8?.confidence_mod)}</div>
-    <div class="sig-row"><div class="sig-left"><div class="sig-name">Timing</div><div class="sig-note">${s.s12?.note||'—'}</div></div>${mb(s.s12?.confidence_mod)}</div>
-    <div class="sig-row"><div class="sig-left"><div class="sig-name">Choppiness</div><div class="sig-note">${s.chop?.note||'—'}</div></div><span class="sig-badge ${(s.chop?.chopScore||0)>.5?'sr':'sn'}">${Math.round((s.chop?.chopScore||0)*100)}% choppy</span></div>
+    <div class="sig-row"><div class="sig-left"><div class="sig-name">Window Delta</div><div class="sig-note">${s.s1?.note||'—'}</div></div>${b((s.s1?.bull||0)*W2.windowDelta,(s.s1?.bear||0)*W2.windowDelta)}</div>
+    <div class="sig-row"><div class="sig-left"><div class="sig-name">Market Odds</div><div class="sig-note">${s.s8?.note||'—'}</div></div>${b((s.s8?.bull||0)*W2.odds,(s.s8?.bear||0)*W2.odds)}</div>
+    <div class="sig-row"><div class="sig-left"><div class="sig-name">1m Momentum</div><div class="sig-note">${s.s2?.note||'—'}</div></div>${b((s.s2?.bull||0)*W2.momentum,(s.s2?.bear||0)*W2.momentum)}</div>
+    <div class="sig-row"><div class="sig-left"><div class="sig-name">3m Trend</div><div class="sig-note">${s.s3?.note||'—'}</div></div>${b((s.s3?.bull||0)*W2.trend3,(s.s3?.bear||0)*W2.trend3)}</div>
+    <div class="sig-row"><div class="sig-left"><div class="sig-name">5m Bias</div><div class="sig-note">${s.s4?.note||'—'}</div></div>${b((s.s4?.bull||0)*W2.trend5,(s.s4?.bear||0)*W2.trend5)}</div>
+    <div class="sig-row"><div class="sig-left"><div class="sig-name">EMA 9/21</div><div class="sig-note">${s.s5?.note||'—'}</div></div>${b((s.s5?.bull||0)*W2.ema,(s.s5?.bear||0)*W2.ema)}</div>
+    <div class="sig-row"><div class="sig-left"><div class="sig-name">RSI (14)</div><div class="sig-note">${s.s6?.note||'—'}</div></div>${b((s.s6?.bull||0)*W2.rsi,(s.s6?.bear||0)*W2.rsi)}</div>
+    <div class="sig-row"><div class="sig-left"><div class="sig-name">Wick Rejection</div><div class="sig-note">${s.s9?.note||'—'}</div></div>${b((s.s9?.bull||0)*W2.wick,(s.s9?.bear||0)*W2.wick)}</div>
+    <div class="sig-row"><div class="sig-left"><div class="sig-name">Mean Reversion</div><div class="sig-note">${s.s10?.note||'—'}</div></div>${b((s.s10?.bull||0)*W2.meanRev,(s.s10?.bear||0)*W2.meanRev)}</div>
+    <div class="sig-row"><div class="sig-left"><div class="sig-name">Volume</div><div class="sig-note">${s.s7?.note||'—'}</div></div>${mb(s.s7?.mod)}</div>
+    <div class="sig-row"><div class="sig-left"><div class="sig-name">Timing</div><div class="sig-note">${s.timing?.note||'—'}</div></div><span class="sig-badge sn">${s.timing?.note||'—'}</span></div>
   ` : '<div class="th-empty">Awaiting first signal...</div>';
 
   card.className='pred-card '+dc;
