@@ -631,16 +631,12 @@ function renderMarket(market, odds) {
 
     <div class="meta-row">
       <div class="meta-item">
-        <div class="meta-lbl">Volume</div>
-        <div class="meta-val">${fmtMoney(market.volume)}</div>
+        <div class="meta-lbl">Window opens</div>
+        <div class="meta-val">${fmtHr(startDt)} ET</div>
       </div>
       <div class="meta-item">
-        <div class="meta-lbl">Liquidity</div>
-        <div class="meta-val">${fmtMoney(market.liquidity)}</div>
-      </div>
-      <div class="meta-item">
-        <div class="meta-lbl">Window</div>
-        <div class="meta-val">${fmtHr(startDt)} – ${fmtHr(endDt)}</div>
+        <div class="meta-lbl">Window closes</div>
+        <div class="meta-val">${fmtHr(endDt)} ET</div>
       </div>
       <div class="meta-item">
         <div class="meta-lbl">Resolves</div>
