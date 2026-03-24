@@ -21,7 +21,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .tb-icon{width:26px;height:26px;background:#f7931a;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#fff;font-family:'JetBrains Mono',monospace}
 .tb-name{font-size:14px;font-weight:800;letter-spacing:-.5px}
 .tb-tag{font-size:9px;color:var(--sub);margin-top:1px}
-.tb-r{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.tb-r{display:flex;flex-direction:row;align-items:center;gap:8px}
 .ws-pill{display:flex;align-items:center;gap:5px;font-size:9px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.06em;padding:3px 9px;border-radius:20px;border:1px solid;transition:all .3s}
 .ws-pill.connected{color:var(--green);border-color:var(--gb);background:var(--gd)}
 .ws-pill.connecting{color:var(--amber);border-color:rgba(255,187,0,.3);background:rgba(255,187,0,.07)}
@@ -30,20 +30,10 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .ws-pill.connected .ws-dot{animation:blink 1.4s ease-in-out infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
 #tb-clock{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted)}
-#price-hero{padding:16px 14px 12px;border-bottom:1px solid var(--border);background:var(--c1)}
-.ph-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
-.ph-lbl{font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
 #btc-price{font-family:'JetBrains Mono',monospace;font-size:36px;font-weight:800;letter-spacing:-2.5px;transition:color .2s}
 #btc-price.up{color:var(--green)}#btc-price.down{color:var(--red)}
-.ph-r{text-align:right}
-.ph-rlbl{font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px}
 #hero-window{font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--sub)}
-.delta-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-#delta-usd{font-size:20px;font-weight:800;font-family:'JetBrains Mono',monospace;letter-spacing:-1px}
 #delta-pct-chip{font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace;padding:3px 8px;border-radius:4px}
-.ptb-row{display:flex;align-items:center;gap:8px;padding-top:8px;border-top:1px solid var(--border)}
-.ptb-lbl{font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.08em}
-#ptb-val{font-size:13px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--sub)}
 .cl-chip{font-size:8px;font-weight:700;font-family:'JetBrains Mono',monospace;background:rgba(85,136,255,.1);border:1px solid rgba(85,136,255,.2);color:var(--blue);padding:2px 5px;border-radius:2px;margin-left:auto}
 #page-body{display:block}
 .left-col,.right-col{padding:0}
@@ -157,7 +147,6 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 @keyframes spin{to{transform:rotate(360deg)}}
 @media(min-width:860px){
   #topbar{padding:0 24px;height:48px}
-  #price-hero{padding:18px 24px 14px}
   #page-body{display:grid;grid-template-columns:1fr 1fr;max-width:1060px;margin:0 auto;align-items:start}
   .left-col{padding:0 8px 0 14px}
   .right-col{padding:0 14px 0 8px;border-left:1px solid var(--border)}
@@ -188,26 +177,17 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
   </div>
 </div>
 
-<div id="price-hero">
-  <div class="ph-top">
-    <div>
-      <div class="ph-lbl">Bitcoin / USD</div>
-      <div id="btc-price">—</div>
-    </div>
-    <div class="ph-r">
-      <div class="ph-rlbl">Current window</div>
-      <div id="hero-window">—</div>
+<div id="price-strip" style="padding:12px 14px;border-bottom:1px solid var(--border);background:var(--c1);display:flex;align-items:center;justify-content:space-between;gap:12px">
+  <div>
+    <div style="font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Bitcoin / USD</div>
+    <div style="display:flex;align-items:baseline;gap:10px">
+      <div id="btc-price" style="font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:800;letter-spacing:-1.5px;transition:color .2s">—</div>
+      <div class="cl-chip">CHAINLINK</div>
     </div>
   </div>
-  <div class="delta-row">
-    <div id="delta-usd" style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:800;letter-spacing:-1px;color:var(--sub)">—</div>
-    <div id="delta-pct-chip" style="font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace;padding:3px 8px;border-radius:4px;color:var(--sub)">—</div>
-    <div style="font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace">vs PTB</div>
-  </div>
-  <div class="ptb-row">
-    <div class="ptb-lbl">Price to Beat</div>
-    <div id="ptb-val">—</div>
-    <div class="cl-chip">CHAINLINK</div>
+  <div style="text-align:right">
+    <div style="font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px">Current window</div>
+    <div id="hero-window" style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--sub)">—</div>
   </div>
 </div>
 
@@ -215,45 +195,6 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
   <div class="left-col">
     <div class="sec-lbl">Market</div>
     <div id="main"><div class="loading"><div class="spinner"></div><div>Connecting...</div></div></div>
-    <div class="sec-lbl">Session Stats</div>
-    <div class="card" id="session-card">
-      <div class="card-head"><div class="card-title">Today's Performance</div></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;background:var(--border);gap:1px;border-bottom:1px solid var(--border)">
-        <div style="background:var(--c1);padding:12px 14px">
-          <div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace;margin-bottom:5px">Total Trades</div>
-          <div style="font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700" id="sess-total">—</div>
-        </div>
-        <div style="background:var(--c1);padding:12px 14px">
-          <div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace;margin-bottom:5px">All-Time Win Rate</div>
-          <div style="font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700;color:var(--amber)" id="sess-rate">—</div>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;background:var(--border);gap:1px;border-bottom:1px solid var(--border)">
-        <div style="background:var(--c1);padding:12px 14px">
-          <div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace;margin-bottom:5px">Net Units</div>
-          <div style="font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700" id="sess-net">—</div>
-        </div>
-        <div style="background:var(--c1);padding:12px 14px">
-          <div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace;margin-bottom:5px">Best Streak</div>
-          <div style="font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700;color:var(--purple)" id="sess-streak">—</div>
-        </div>
-      </div>
-      <div style="padding:12px 14px;background:var(--c2)">
-        <div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace;margin-bottom:8px">Win / Loss Ratio</div>
-        <div style="height:6px;background:var(--border2);border-radius:3px;overflow:hidden;margin-bottom:6px">
-          <div id="wl-bar" style="height:100%;background:var(--green);border-radius:3px;transition:width .6s ease;width:0%"></div>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:9px;font-family:'JetBrains Mono',monospace">
-          <span style="color:var(--green)" id="wl-w">0W</span>
-          <span style="color:var(--muted)" id="wl-mid">—</span>
-          <span style="color:var(--red)" id="wl-l">0L</span>
-        </div>
-      </div>
-      <div style="padding:10px 14px;background:var(--c2);border-top:1px solid var(--border)">
-        <div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace;margin-bottom:6px">Last 5 Decisions</div>
-        <div id="last5" style="display:flex;gap:5px"></div>
-      </div>
-    </div>
   </div>
   <div class="right-col">
     <div class="sec-lbl">Prediction</div>
@@ -332,25 +273,7 @@ function setBTC(p){
   prevBTC=p;
 }
 
-// Delta display
-function updateDelta(){
-  if(!btcPrice||!currentMarket?.startPrice)return;
-  const sp=currentMarket.startPrice,diff=btcPrice-sp,pct=((diff/sp)*100).toFixed(3);
-  const usdEl=document.getElementById('delta-usd'),pctEl=document.getElementById('delta-pct-chip');
-  const ptbEl=document.getElementById('ptb-val');
-  if(ptbEl) ptbEl.textContent='$'+fmt(sp);
-  if(!usdEl||!pctEl)return;
-  if(diff>0){
-    usdEl.textContent='+$'+fmt(diff); usdEl.style.color='var(--green)';
-    pctEl.textContent='+'+pct+'%'; pctEl.style.cssText='font-size:11px;font-weight:700;font-family:JetBrains Mono,monospace;padding:3px 8px;border-radius:4px;background:var(--gd);border:1px solid var(--gb);color:var(--green)';
-  } else if(diff<0){
-    usdEl.textContent='-$'+fmt(Math.abs(diff)); usdEl.style.color='var(--red)';
-    pctEl.textContent=pct+'%'; pctEl.style.cssText='font-size:11px;font-weight:700;font-family:JetBrains Mono,monospace;padding:3px 8px;border-radius:4px;background:var(--rd);border:1px solid var(--rb);color:var(--red)';
-  } else {
-    usdEl.textContent='$0.00'; usdEl.style.color='var(--sub)';
-    pctEl.textContent='0.000%'; pctEl.style.color='var(--sub)';
-  }
-}
+// Delta is now shown inside the market card only
 
 // Odds
 let lastOddsT=0,pendingOdds=null;
@@ -375,7 +298,6 @@ function render(market,odds){
   const fh=d=>d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'America/New_York'});
   const sd=new Date(market.wts*1000),ed=new Date(market.endSec*1000);
   document.getElementById('hero-window').textContent=fh(sd)+' – '+fh(ed)+' ET';
-  if(sp) document.getElementById('ptb-val').textContent='$'+fmt(sp);
   const bc=pct<20?'var(--red)':pct<40?'var(--amber)':'var(--green)';
   let diff=btcPrice&&sp?btcPrice-sp:null,diffPct=diff!=null?((diff/sp)*100).toFixed(3):null;
   let dirHtml='<div class="dchip flat" id="dtag">— loading</div>';
@@ -415,7 +337,7 @@ function startCd(){
       if(dg){if(diff>0){dg.className='dchip up';dg.textContent='▲ +'+pct+'%';}else if(diff<0){dg.className='dchip down';dg.textContent='▼ '+pct+'%';}else{dg.className='dchip flat';dg.textContent='→ FLAT';}}
       if(vv){const usd=(diff>=0?'+':'')+fmt(diff);if(diff>0){vv.className='vs-val up';vv.textContent='$'+usd+' (+'+pct+'%)';}else if(diff<0){vv.className='vs-val down';vv.textContent='$'+usd+' ('+pct+'%)';}else{vv.className='vs-val flat';vv.textContent='$0.00 (0.000%)';}}
     }
-    updateDelta();
+    
     const wl=document.getElementById('eng-wl'),cd=document.getElementById('eng-cd');
     if(wl)wl.textContent=fmtT(s);
     if(cd)cd.textContent=fmtT(s)+' left';
@@ -435,14 +357,14 @@ function connect(){
       const newW=!currentMarket||msg.market.wts!==currentMarket.wts;
       if(newW&&currentMarket)resolveDecision();
       currentMarket=msg.market;latestOdds=msg.odds;
-      render(currentMarket,latestOdds);updateDelta();
+      render(currentMarket,latestOdds);
       if(newW){
         lockedDecision=null;
         document.getElementById('engine-card').innerHTML=`<div class="pred-head"><div class="pred-head-l">Signal Engine</div><div class="pred-head-r">Waiting for 60s mark...</div></div><div class="loading"><div class="spinner"></div><div>New window opened</div></div>`;
         document.getElementById('sig-breakdown').style.display='none';
       } else if(lockedDecision)renderPredCard(lockedDecision);
     }
-    if(msg.type==='btc_price'){btcPrice=msg.price;setBTC(btcPrice);updateDelta();}
+    if(msg.type==='btc_price'){btcPrice=msg.price;setBTC(btcPrice);}
     if(msg.type==='odds'){latestOdds={yes:msg.yes,no:msg.no};updateOdds(msg.yes,msg.no);}
     if(msg.type==='tracker'){tracker=msg.tracker;renderTracker();}
     if(msg.type==='engine_waiting'){
@@ -657,21 +579,21 @@ function renderPredCard(d){
 
 function renderSigBreakdown(d){
   const bd=document.getElementById('sig-breakdown'),grid=document.getElementById('sb-grid');
-  if(!bd||!grid||!d.reason)return;
-  const reason=d.reason||'';
+  if(!bd||!grid)return;
+  const sv=d.sv||{};
   const sigs=[
-    {name:'Window delta',bull:reason.includes('delta strongly UP')||reason.includes('delta UP')||reason.includes('delta slightly UP')||reason.includes('delta barely UP'),bear:reason.includes('delta strongly DOWN')||reason.includes('delta DOWN')||reason.includes('delta slightly DOWN')||reason.includes('delta barely DOWN'),note:reason.match(/delta [^\s·]+/)?reason.match(/delta [^\s·]+/)[0]:'—'},
-    {name:'Market odds',bull:reason.includes('YES bid')||reason.includes('YES lean'),bear:reason.includes('NO bid')||reason.includes('NO lean'),note:reason.match(/(YES|NO) (bid|lean) \d+¢/)?reason.match(/(YES|NO) (bid|lean) \d+¢/)[0]:'—'},
-    {name:'1m momentum',bull:reason.includes('2 bull candles')||reason.includes('last candle bullish'),bear:reason.includes('2 bear candles')||reason.includes('last candle bearish'),note:reason.includes('candle')?reason.match(/\d+ (bull|bear) candles?|last candle \w+/)?.[0]||'—':'—'},
-    {name:'3m trend',bull:reason.includes('3/3 bull')||reason.includes('2/3 bull'),bear:reason.includes('3/3 bear')||reason.includes('2/3 bear'),note:reason.match(/\d\/\d (bull|bear)/)?reason.match(/\d\/\d (bull|bear)/)[0]:'—'},
-    {name:'EMA 9/21',bull:reason.includes('EMA9 above')||reason.includes('EMA9>EMA21'),bear:reason.includes('EMA9 below')||reason.includes('EMA9<EMA21'),note:reason.includes('EMA')?'EMA signal':'—'},
-    {name:'RSI 14',bull:reason.includes('RSI oversold')||reason.includes('RSI low'),bear:reason.includes('RSI overbought')||reason.includes('RSI high'),note:reason.match(/RSI \w+ \d+/)?reason.match(/RSI \w+ \d+/)[0]:'—'},
-    {name:'Volume',bull:reason.includes('vol surge')||reason.includes('vol elevated'),bear:false,note:reason.match(/vol \w+( [\d.]+x)?/)?reason.match(/vol \w+( [\d.]+x)?/)[0]:'—'},
-    {name:'Wick rejection',bull:reason.includes('bull wick'),bear:reason.includes('bear wick'),note:reason.match(/\w+ wick \d+%/)?reason.match(/\w+ wick \d+%/)[0]:'—'},
+    {name:'Window delta',   vote:sv.delta    ||'neut'},
+    {name:'Market odds',    vote:sv.odds     ||'neut'},
+    {name:'1m momentum',    vote:sv.momentum ||'neut'},
+    {name:'3m trend',       vote:sv.trend    ||'neut'},
+    {name:'EMA 9/21',       vote:sv.ema      ||'neut'},
+    {name:'RSI 14',         vote:sv.rsi      ||'neut'},
+    {name:'Volume',         vote:sv.volume   ||'neut'},
+    {name:'Wick rejection', vote:sv.wick     ||'neut'},
   ];
   grid.innerHTML=sigs.map(s=>{
-    const cls=s.bull?'sbb':s.bear?'sbr':'sbn';
-    const txt=s.bull?'BULL':s.bear?'BEAR':'NEUT';
+    const cls=s.vote==='bull'?'sbb':s.vote==='bear'?'sbr':'sbn';
+    const txt=s.vote==='bull'?'BULL':s.vote==='bear'?'BEAR':'NEUT';
     return`<div class="sb-cell"><span class="sb-name">${s.name}</span><span class="sb-badge ${cls}">${txt}</span></div>`;
   }).join('');
   bd.style.display='block';
