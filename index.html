@@ -147,15 +147,15 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 @keyframes spin{to{transform:rotate(360deg)}}
 @media(min-width:860px){
   #topbar{padding:0 24px;height:48px}
-  #page-body{display:grid;grid-template-columns:1fr 1fr;max-width:1060px;margin:0 auto;align-items:start}
-  .left-col{padding:0 8px 0 14px}
-  .right-col{padding:0 14px 0 8px;border-left:1px solid var(--border)}
+  #page-body{display:grid;grid-template-columns:1fr 1fr;grid-template-areas:'left right' 'tracker tracker';max-width:1060px;margin:0 auto;align-items:start}
+  .left-col{padding:0 8px 0 14px;grid-area:left}
+  .right-col{padding:0 14px 0 8px;border-left:1px solid var(--border);grid-area:right}
+  #tracker-full{grid-area:tracker;border-top:1px solid var(--border);padding:0 14px}
+  #tracker-full .sec-lbl{padding:13px 0 7px}
+  #tracker-full .tracker-card,#tracker-full .disc{margin:0 0 8px}
   .sec-lbl{padding:13px 4px 7px}
   .card,.pred-card,.tracker-card,.sig-breakdown{margin:0 0 8px}
   .disc{margin:0 0 8px}
-  #tracker-full{max-width:1060px;margin:0 auto;padding:0 14px}
-  #tracker-full .sec-lbl{padding:13px 0 7px}
-  #tracker-full .tracker-card,#tracker-full .disc{margin:0 0 8px}
 }
 @media(max-width:859px){
   body{max-width:480px;margin:0 auto}
@@ -199,53 +199,52 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
   <div class="right-col">
     <div class="sec-lbl">Prediction</div>
     <div id="engine-wrap">
-    <div class="pred-card" id="engine-card">
-      <div class="pred-head">
-        <div class="pred-head-l">Signal Engine</div>
-        <div class="pred-head-r" id="eng-status">Waiting...</div>
-      </div>
-      <div class="loading"><div class="spinner"></div><div id="eng-msg">Connecting to feed...</div></div>
-    </div>
-    <div class="sig-breakdown" id="sig-breakdown" style="display:none">
-      <div class="sb-head">Signal Breakdown</div>
-      <div class="sb-grid" id="sb-grid"></div>
-    </div>
-    </div>
-  </div>
-</div>
-
-<div id="tracker-full">
-  <div class="sec-lbl">Track Record</div>
-  <div class="tracker-card">
-    <div class="tr-head">
-      <div class="tr-hl">Signal Performance</div>
-      <div class="tr-acc" id="tracker-session">—</div>
-    </div>
-    <div class="tr-stats">
-      <div class="tr-cell"><div class="tr-cl">Wins</div><div class="tr-cv cv-w" id="t-wins">—</div></div>
-      <div class="tr-cell"><div class="tr-cl">Losses</div><div class="tr-cv cv-l" id="t-losses">—</div></div>
-      <div class="tr-cell"><div class="tr-cl">Skipped</div><div class="tr-cv cv-s" id="t-skips">—</div></div>
-      <div class="tr-cell"><div class="tr-cl">Win Rate</div><div class="tr-cv cv-r" id="t-rate">—</div></div>
-      <div class="tr-cell"><div class="tr-cl">Net Units</div><div class="tr-cv cv-b" id="t-net">—</div></div>
-    </div>
-    <div class="tr-body">
-      <div class="tr-lbl">Equity Curve</div>
-      <div class="eq-wrap">
-        <canvas id="eq-canvas" height="140"></canvas>
-        <div class="eq-tooltip" id="eq-tt">
-          <div class="tt-time" id="tt-time">—</div>
-          <div class="tt-dec" id="tt-dec">—</div>
-          <div class="tt-row"><span>Result</span><span class="tt-val" id="tt-res">—</span></div>
-          <div class="tt-row"><span>Confidence</span><span class="tt-val" id="tt-conf">—</span></div>
-          <div class="tt-row"><span>Running P&L</span><span class="tt-val" id="tt-pl">—</span></div>
+      <div class="pred-card" id="engine-card">
+        <div class="pred-head">
+          <div class="pred-head-l">Signal Engine</div>
+          <div class="pred-head-r" id="eng-status">Waiting...</div>
         </div>
+        <div class="loading"><div class="spinner"></div><div id="eng-msg">Connecting to feed...</div></div>
       </div>
-      <div class="eq-hint" id="eq-hint">hover any point to inspect</div>
-      <div class="rec-lbl">Recent Decisions</div>
-      <div id="tracker-list"><div class="rec-empty">No decisions yet</div></div>
+      <div class="sig-breakdown" id="sig-breakdown" style="display:none">
+        <div class="sb-head">Signal Breakdown</div>
+        <div class="sb-grid" id="sb-grid"></div>
+      </div>
     </div>
   </div>
-  <div class="disc">Not financial advice. Automated signal engine for informational purposes only.</div>
+  <div id="tracker-full">
+    <div class="sec-lbl">Track Record</div>
+    <div class="tracker-card">
+      <div class="tr-head">
+        <div class="tr-hl">Signal Performance</div>
+        <div class="tr-acc" id="tracker-session">—</div>
+      </div>
+      <div class="tr-stats">
+        <div class="tr-cell"><div class="tr-cl">Wins</div><div class="tr-cv cv-w" id="t-wins">—</div></div>
+        <div class="tr-cell"><div class="tr-cl">Losses</div><div class="tr-cv cv-l" id="t-losses">—</div></div>
+        <div class="tr-cell"><div class="tr-cl">Skipped</div><div class="tr-cv cv-s" id="t-skips">—</div></div>
+        <div class="tr-cell"><div class="tr-cl">Win Rate</div><div class="tr-cv cv-r" id="t-rate">—</div></div>
+        <div class="tr-cell"><div class="tr-cl">Net Units</div><div class="tr-cv cv-b" id="t-net">—</div></div>
+      </div>
+      <div class="tr-body">
+        <div class="tr-lbl">Equity Curve</div>
+        <div class="eq-wrap">
+          <canvas id="eq-canvas" height="140"></canvas>
+          <div class="eq-tooltip" id="eq-tt">
+            <div class="tt-time" id="tt-time">—</div>
+            <div class="tt-dec" id="tt-dec">—</div>
+            <div class="tt-row"><span>Result</span><span class="tt-val" id="tt-res">—</span></div>
+            <div class="tt-row"><span>Confidence</span><span class="tt-val" id="tt-conf">—</span></div>
+            <div class="tt-row"><span>Running P&L</span><span class="tt-val" id="tt-pl">—</span></div>
+          </div>
+        </div>
+        <div class="eq-hint" id="eq-hint">hover any point to inspect</div>
+        <div class="rec-lbl">Recent Decisions</div>
+        <div id="tracker-list"><div class="rec-empty">No decisions yet</div></div>
+      </div>
+    </div>
+    <div class="disc">Not financial advice. Automated signal engine for informational purposes only.</div>
+  </div>
 </div>
 
 <script>
