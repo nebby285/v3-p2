@@ -303,10 +303,13 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 </div>
 
 <script>
+<script>
 const RAILWAY_WS='wss://v3-production-1fb6.up.railway.app';
 let ws=null,currentMarket=null,latestOdds={yes:.5,no:.5};
 let btcPrice=null,prevBTC=null,cdTimer=null,reconnDelay=1000;
+let lockedDecision=null; // one per window, locked at browser level
 
+// clock
 setInterval(()=>{
   const n=new Date();
   document.getElementById('tb-clock').textContent=
@@ -323,10 +326,7 @@ function setBTC(p){
   const el=document.getElementById('btc-price');
   if(!el)return;
   el.textContent='$'+fmt(p,2);
-  if(prevBTC!=null){
-    el.className='pc-val '+(p>prevBTC?'up':p<prevBTC?'down':'');
-    setTimeout(()=>el.className='pc-val',700);
-  }
+  if(prevBTC!=null){el.className=p>prevBTC?'up':p<prevBTC?'down':'';setTimeout(()=>el.className='',700);}
   prevBTC=p;
 }
 
@@ -342,10 +342,8 @@ function applyOdds(yes,no){
   const yp=document.getElementById('yes-pct'),np=document.getElementById('no-pct');
   const yv=document.getElementById('yes-pay'),nv=document.getElementById('no-pay');
   if(!ye)return;
-  ye.textContent='¢'+Math.round(yes*100);
-  ne.textContent='¢'+Math.round(no*100);
-  yp.textContent=Math.round(yes*100)+'% implied';
-  np.textContent=Math.round(no*100)+'% implied';
+  ye.textContent='¢'+Math.round(yes*100); ne.textContent='¢'+Math.round(no*100);
+  yp.textContent=Math.round(yes*100)+'% implied'; np.textContent=Math.round(no*100)+'% implied';
   yv.innerHTML=`Pays <strong>${yes>0?(1/yes).toFixed(2):'—'}x</strong> if BTC closes higher`;
   nv.innerHTML=`Pays <strong>${no>0?(1/no).toFixed(2):'—'}x</strong> if BTC closes lower`;
 }
@@ -355,8 +353,7 @@ function updateDir(){
   const dEl=document.getElementById('dtag'),cEl=document.getElementById('cur-val'),vEl=document.getElementById('vs-val');
   if(!cEl||!currentMarket||!btcPrice)return;
   cEl.textContent='$'+fmt(btcPrice,2);
-  const sp=currentMarket.startPrice;
-  if(!sp)return;
+  const sp=currentMarket.startPrice; if(!sp)return;
   const diff=btcPrice-sp,pct=((diff/sp)*100).toFixed(3);
   if(dEl){
     if(diff>0){dEl.className='dchip up';dEl.textContent='▲ +'+pct+'%';}
@@ -377,34 +374,30 @@ function render(market,odds){
   const isLive=secsLeft>0;
   const pct=Math.max(0,Math.min(100,(secsLeft/step)*100));
   const bc=pct<20?'var(--red)':pct<40?'var(--amber)':'var(--green)';
-  const yp=odds.yes,np=odds.no;
-  const sp=market.startPrice;
+  const yp=odds.yes,np=odds.no,sp=market.startPrice;
   const startDt=new Date(market.wts*1000),endDt=new Date(market.endSec*1000);
   const fh=d=>d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'America/New_York'});
-
-  let diff=btcPrice&&sp?btcPrice-sp:null;
-  let diffPct=diff!=null?((diff/sp)*100).toFixed(3):null;
+  document.getElementById('hero-window').textContent=fh(startDt)+' – '+fh(endDt)+' ET';
+  let diff=btcPrice&&sp?btcPrice-sp:null,diffPct=diff!=null?((diff/sp)*100).toFixed(3):null;
   let dirHtml='<div class="dchip flat" id="dtag">— loading</div>';
   if(diff!=null){
-    if(diff>0) dirHtml=`<div class="dchip up" id="dtag">▲ +${diffPct}%</div>`;
-    else if(diff<0) dirHtml=`<div class="dchip down" id="dtag">▼ ${diffPct}%</div>`;
+    if(diff>0)dirHtml=`<div class="dchip up" id="dtag">▲ +${diffPct}%</div>`;
+    else if(diff<0)dirHtml=`<div class="dchip down" id="dtag">▼ ${diffPct}%</div>`;
     else dirHtml=`<div class="dchip flat" id="dtag">→ FLAT</div>`;
   }
-  let vsClass='flat',vsTxt='Waiting for price data...';
+  let vsClass='flat',vsTxt='Waiting for price...';
   if(diff!=null){
     const usd=(diff>=0?'+':'')+fmt(diff,2);
     if(diff>0){vsClass='up';vsTxt='$'+usd+' (+'+diffPct+'%)';}
     else if(diff<0){vsClass='down';vsTxt='$'+usd+' ('+diffPct+'%)';}
     else{vsClass='flat';vsTxt='$0.00 (0.000%)';}
   }
-
   document.getElementById('main').innerHTML=`
   <div class="card ${isLive?'live':''}">
     <div class="card-head">
       <div class="card-head-title">BTC Up or Down · ${fh(startDt)}–${fh(endDt)} ET</div>
       <div class="live-dot-badge ${isLive?'live':'settled'}"><div class="ws-dot"></div>${isLive?'LIVE':'SETTLED'}</div>
     </div>
-
     <div style="display:grid;grid-template-columns:1fr 1fr;background:var(--border);gap:1px">
       <div style="background:var(--c1);padding:14px 16px">
         <div class="pc-label">Price to Beat</div>
@@ -417,34 +410,24 @@ function render(market,odds){
         ${dirHtml}
       </div>
     </div>
-
     <div class="vs-bar">
       <div class="vs-label">Current vs Target</div>
       <div class="vs-val ${vsClass}" id="vs-val">${vsTxt}</div>
     </div>
-
-    ${isLive?`
-    <div class="timer-row">
+    ${isLive?`<div class="timer-row">
       <div class="timer-label">Closes in</div>
       <div id="timer-val">${fmtT(secsLeft)}</div>
       <div class="timer-track"><div class="timer-fill" id="timer-fill" style="width:${pct}%;background:${bc}"></div></div>
     </div>`:''}
-
     <div class="odds-grid">
       <div class="odd yes">
-        <div class="odd-top">
-          <div class="odd-dir">↑ YES · Up</div>
-          <div class="odd-pct" id="yes-pct">${Math.round(yp*100)}% implied</div>
-        </div>
+        <div class="odd-top"><div class="odd-dir">↑ YES · Up</div><div class="odd-pct" id="yes-pct">${Math.round(yp*100)}% implied</div></div>
         <div class="odd-price" id="yes-p">¢${Math.round(yp*100)}</div>
         <div class="odd-unit">per share</div>
         <div class="odd-pay" id="yes-pay">Pays <strong>${yp>0?(1/yp).toFixed(2):'—'}x</strong> if BTC closes higher</div>
       </div>
       <div class="odd no">
-        <div class="odd-top">
-          <div class="odd-dir">↓ NO · Down</div>
-          <div class="odd-pct" id="no-pct">${Math.round(np*100)}% implied</div>
-        </div>
+        <div class="odd-top"><div class="odd-dir">↓ NO · Down</div><div class="odd-pct" id="no-pct">${Math.round(np*100)}% implied</div></div>
         <div class="odd-price" id="no-p">¢${Math.round(np*100)}</div>
         <div class="odd-unit">per share</div>
         <div class="odd-pay" id="no-pay">Pays <strong>${np>0?(1/np).toFixed(2):'—'}x</strong> if BTC closes lower</div>
@@ -460,11 +443,9 @@ function startCd(){
     if(!currentMarket)return;
     const s=Math.max(0,currentMarket.endSec-Math.floor(Date.now()/1000));
     const p=Math.max(0,Math.min(100,(s/300)*100));
-    const tv=document.getElementById('timer-val'),tf=document.getElementById('timer-fill');
-    const vv=document.getElementById('vs-val');
+    const tv=document.getElementById('timer-val'),tf=document.getElementById('timer-fill'),vv=document.getElementById('vs-val');
     if(tv)tv.textContent=fmtT(s);
     if(tf){tf.style.width=p+'%';tf.style.background=p<20?'var(--red)':p<40?'var(--amber)':'var(--green)';}
-    // keep vs-val live
     if(vv&&btcPrice&&currentMarket?.startPrice){
       const diff=btcPrice-currentMarket.startPrice,pct=((diff/currentMarket.startPrice)*100).toFixed(3);
       const usd=(diff>=0?'+':'')+fmt(diff,2);
@@ -487,16 +468,16 @@ function connect(){
   ws.onmessage=(e)=>{
     const msg=JSON.parse(e.data);
     if(msg.type==='market'){
+      // new window — resolve old decision
+      if(currentMarket&&msg.market.wts!==currentMarket.wts) resolveDecision();
       currentMarket=msg.market; latestOdds=msg.odds;
       render(currentMarket,latestOdds);
+      // reset locked decision for new window
+      if(!lockedDecision||lockedDecision.wts!==msg.market.wts) lockedDecision=null;
+      scheduleEngine();
     }
     if(msg.type==='btc_price'){btcPrice=msg.price;setBTC(btcPrice);updateDir();}
     if(msg.type==='odds'){latestOdds={yes:msg.yes,no:msg.no};updateOdds(msg.yes,msg.no);}
-    if(msg.type==='decision'){renderPredCard(msg.decision);}
-    if(msg.type==='engine_waiting'){
-      const el=document.getElementById('engine-wait-msg');
-      if(el){ const wait=30-msg.elapsed; el.textContent=wait>0?`Signal fires in ~${wait}s...`:'Evaluating signals...'; }
-    }
     if(msg.type==='tracker'){tracker=msg.tracker;renderTracker();}
   };
   ws.onclose=()=>{setWS('disconnected');setTimeout(connect,reconnDelay=Math.min(reconnDelay*1.5,15000));};
@@ -505,147 +486,274 @@ function connect(){
 connect();
 
 // ── TRACKER ───────────────────────────────────────────────────────────────────
-let tracker = { wins:0, losses:0, skips:0, history:[] };
-const TRACKER_URL = 'https://v3-production-1fb6.up.railway.app/tracker';
+let tracker={wins:0,losses:0,skips:0,history:[]};
+const TRACKER_URL='https://v3-production-1fb6.up.railway.app/tracker';
 
-async function loadTracker() {
-  try {
-    const r = await fetch(TRACKER_URL, { signal:AbortSignal.timeout(5000) });
-    if(r.ok){ tracker=await r.json(); renderTracker(); }
-  } catch(e) {}
+async function loadTracker(){
+  try{const r=await fetch(TRACKER_URL,{signal:AbortSignal.timeout(5000)});if(r.ok){tracker=await r.json();renderTracker();}}catch(e){}
+}
+async function saveTracker(){
+  try{await fetch(TRACKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(tracker)});}catch(e){}
 }
 
-function renderTracker() {
-  const wins=tracker.wins||0, losses=tracker.losses||0, skips=tracker.skips||0;
+function resolveDecision(){
+  if(!lockedDecision||lockedDecision.resolved)return;
+  const{decision,startPrice}=lockedDecision;
+  let result='SKIP';
+  if(decision!=='NO TRADE'&&btcPrice&&startPrice){
+    const won=(decision==='BUY UP'&&btcPrice>=startPrice)||(decision==='BUY DOWN'&&btcPrice<startPrice);
+    result=won?'WIN':'LOSS';
+    if(won)tracker.wins++;else tracker.losses++;
+  } else if(decision==='NO TRADE'){tracker.skips++;result='SKIP';}
+  const idx=tracker.history.findIndex(h=>h.window===lockedDecision.wts);
+  if(idx>=0)tracker.history[idx].result=result;
+  lockedDecision.resolved=true;
+  saveTracker();
+  renderTracker();
+}
+
+function renderTracker(){
+  const wins=tracker.wins||0,losses=tracker.losses||0,skips=tracker.skips||0;
   const total=wins+losses;
-  const rate=total>0?Math.round((wins/total)*100)+'%':'—';
   document.getElementById('t-wins').textContent=wins;
   document.getElementById('t-losses').textContent=losses;
   document.getElementById('t-skips').textContent=skips;
-  document.getElementById('t-rate').textContent=rate;
+  document.getElementById('t-rate').textContent=total>0?Math.round((wins/total)*100)+'%':'—';
   drawEquityCurve();
   const list=document.getElementById('tracker-list');
   const history=tracker.history||[];
-  if(!history.length){ list.innerHTML='<div class="th-empty">No decisions yet</div>'; return; }
+  if(!history.length){list.innerHTML='<div class="th-empty">No decisions yet</div>';return;}
   list.innerHTML=[...history].reverse().slice(0,10).map(h=>{
     const pc=h.decision==='BUY UP'?'up':h.decision==='BUY DOWN'?'down':'skip';
     const pt=h.decision==='BUY UP'?'↑ UP':h.decision==='BUY DOWN'?'↓ DOWN':'— SKIP';
     const rc=h.result==='WIN'?'win':h.result==='LOSS'?'loss':h.result==='PENDING'?'pending':'skip';
-    return `<div class="th-row"><div class="th-time">${h.time}</div><div class="th-pred ${pc}">${pt}</div><div class="th-result ${rc}">${h.result}</div></div>`;
+    return`<div class="th-row"><div class="th-time">${h.time}</div><div class="th-pred ${pc}">${pt}</div><div class="th-result ${rc}">${h.result}</div></div>`;
   }).join('');
   const sess=total>0?`${wins}W ${losses}L · ${Math.round((wins/total)*100)}% acc`:'Session';
   document.getElementById('tracker-session').textContent=sess;
 }
 
-function drawEquityCurve() {
+function drawEquityCurve(){
   const canvas=document.getElementById('equity-chart');
-  if(!canvas) return;
+  if(!canvas)return;
   const history=(tracker.history||[]).filter(h=>h.result==='WIN'||h.result==='LOSS');
   const ctx=canvas.getContext('2d');
   const dpr=window.devicePixelRatio||1;
-  const W=canvas.offsetWidth||300, H=80;
-  canvas.width=W*dpr; canvas.height=H*dpr;
+  const W=canvas.offsetWidth||300,H=80;
+  canvas.width=W*dpr;canvas.height=H*dpr;
   ctx.scale(dpr,dpr);
-  ctx.fillStyle='#111116'; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#111116';ctx.fillRect(0,0,W,H);
   if(history.length<2){
-    ctx.fillStyle='#44445a'; ctx.font='10px monospace';
-    ctx.textAlign='center';
-    ctx.fillText('Graph builds as decisions resolve',W/2,44);
-    return;
+    ctx.fillStyle='#44445a';ctx.font='10px monospace';ctx.textAlign='center';
+    ctx.fillText('Graph builds as decisions resolve',W/2,44);return;
   }
   const pts=[0];
-  for(const h of history) pts.push(pts[pts.length-1]+(h.result==='WIN'?1:-1));
-  const minP=Math.min(...pts), maxP=Math.max(...pts);
-  const range=Math.max(maxP-minP,2);
-  const pad=10;
+  for(const h of history)pts.push(pts[pts.length-1]+(h.result==='WIN'?1:-1));
+  const minP=Math.min(...pts),maxP=Math.max(...pts),range=Math.max(maxP-minP,2),pad=10;
   const px=i=>pad+(i/(pts.length-1))*(W-pad*2);
   const py=v=>H-pad-((v-minP)/range)*(H-pad*2);
-  const final=pts[pts.length-1];
-  const isPos=final>=0;
-  // zero line
-  ctx.strokeStyle='#2a2a32'; ctx.lineWidth=1; ctx.setLineDash([3,3]);
-  ctx.beginPath(); ctx.moveTo(pad,py(0)); ctx.lineTo(W-pad,py(0)); ctx.stroke();
+  const final=pts[pts.length-1],isPos=final>=0;
+  ctx.strokeStyle='#2a2a32';ctx.lineWidth=1;ctx.setLineDash([3,3]);
+  ctx.beginPath();ctx.moveTo(pad,py(0));ctx.lineTo(W-pad,py(0));ctx.stroke();
   ctx.setLineDash([]);
-  // fill
-  ctx.beginPath(); ctx.moveTo(px(0),py(0));
+  ctx.beginPath();ctx.moveTo(px(0),py(0));
   pts.forEach((v,i)=>ctx.lineTo(px(i),py(v)));
-  ctx.lineTo(px(pts.length-1),py(0)); ctx.closePath();
-  ctx.fillStyle=isPos?'rgba(0,232,122,0.1)':'rgba(255,51,102,0.1)'; ctx.fill();
-  // line
-  ctx.beginPath(); ctx.moveTo(px(0),py(pts[0]));
-  pts.forEach((v,i)=>{ if(i>0) ctx.lineTo(px(i),py(v)); });
-  ctx.strokeStyle=isPos?'#00e87a':'#ff3366'; ctx.lineWidth=2; ctx.lineJoin='round'; ctx.stroke();
-  // dot + label
-  ctx.beginPath(); ctx.arc(px(pts.length-1),py(final),3,0,Math.PI*2);
-  ctx.fillStyle=isPos?'#00e87a':'#ff3366'; ctx.fill();
-  ctx.fillStyle=isPos?'#00e87a':'#ff3366'; ctx.font='bold 10px monospace';
-  ctx.textAlign='right';
-  ctx.fillText((final>0?'+':'')+final, W-pad+2, py(final)+(final>=0?-5:14));
+  ctx.lineTo(px(pts.length-1),py(0));ctx.closePath();
+  ctx.fillStyle=isPos?'rgba(0,232,122,0.1)':'rgba(255,51,102,0.1)';ctx.fill();
+  ctx.beginPath();ctx.moveTo(px(0),py(pts[0]));
+  pts.forEach((v,i)=>{if(i>0)ctx.lineTo(px(i),py(v));});
+  ctx.strokeStyle=isPos?'#00e87a':'#ff3366';ctx.lineWidth=2;ctx.lineJoin='round';ctx.stroke();
+  ctx.beginPath();ctx.arc(px(pts.length-1),py(final),3,0,Math.PI*2);
+  ctx.fillStyle=isPos?'#00e87a':'#ff3366';ctx.fill();
+  ctx.fillStyle=isPos?'#00e87a':'#ff3366';ctx.font='bold 10px monospace';ctx.textAlign='right';
+  ctx.fillText((final>0?'+':'')+final,W-pad+2,py(final)+(final>=0?-5:14));
+}
+window.addEventListener('resize',()=>{if((tracker.history||[]).length)drawEquityCurve();});
+
+// ── ENGINE (runs in browser, one decision per window) ─────────────────────────
+function ema(v,p){const k=2/(p+1);let e=v[0];for(let i=1;i<v.length;i++)e=v[i]*k+e*(1-k);return e;}
+function rsi(c,p=14){if(c.length<p+1)return 50;let g=0,l=0;for(let i=c.length-p;i<c.length;i++){const d=c[i]-c[i-1];d>0?g+=d:l-=d;}const ag=g/p,al=l/p;if(!al)return 100;return 100-(100/(1+ag/al));}
+function avg(a){return a.reduce((x,y)=>x+y,0)/a.length;}
+function clamp(v,mn,mx){return Math.max(mn,Math.min(mx,v));}
+
+async function fetchCandles(){
+  try{
+    const r=await fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1m&limit=30',{signal:AbortSignal.timeout(6000)});
+    return(await r.json()).map(c=>({ts:c[0]/1000,open:parseFloat(c[1]),high:parseFloat(c[2]),low:parseFloat(c[3]),close:parseFloat(c[4]),volume:parseFloat(c[5])}));
+  }catch(e){console.error('[ENGINE] candle fetch failed',e.message);return null;}
 }
 
-// ── RENDER PREDICTION CARD ────────────────────────────────────────────────────
-function renderPredCard(d) {
-  if(!d) return;
-  const card=document.getElementById('engine-card');
-  if(!card) return;
-  const { decision, reason, bull, bear, conf, quality, edge, ev, tokenPrice,
-          winProb, signals, lockedAt, lockedAtElapsed } = d;
-  const W={windowDelta:8.0,marketOddsDiv:3.0,momentum1m:2.5,trend3m:2.0,trend5m:1.5,
-    acceleration:1.5,emaCross:1.0,rsiExtreme:1.5,volatilityRegime:1.5,
-    fakeBreakout:1.5,meanReversion:1.0,volumeSurge:1.0,timeInWindow:1.0};
+let engineScheduled=false;
+function scheduleEngine(){
+  if(engineScheduled)return;
+  engineScheduled=true;
+  // Fire immediately on new window
+  setTimeout(()=>{engineScheduled=false;runEngine();},2000);
+}
 
+async function runEngine(){
+  if(!currentMarket||!btcPrice||!currentMarket.startPrice){
+    console.log('[ENGINE] missing data, retrying in 5s');
+    setTimeout(runEngine,5000);return;
+  }
+  // Already have locked decision for this window — just re-render it
+  if(lockedDecision&&lockedDecision.wts===currentMarket.wts&&!lockedDecision.resolved){
+    renderPredCard(lockedDecision);return;
+  }
+  const secsLeft=Math.max(0,currentMarket.endSec-Math.floor(Date.now()/1000));
+  if(secsLeft<=0){console.log('[ENGINE] window over');return;}
+
+  console.log('[ENGINE] fetching candles...');
+  const candles=await fetchCandles();
+  if(!candles){console.log('[ENGINE] no candles, retry in 10s');setTimeout(runEngine,10000);return;}
+
+  const cp=btcPrice,sp=currentMarket.startPrice,yp=latestOdds.yes,np=latestOdds.no;
+  const elapsed=300-secsLeft;
+
+  // Signals
+  const d=((cp-sp)/sp)*100;
+  let bull=0,bear=0;
+  // Window delta (weight 8) — dominant signal
+  if(d>0.10)bull+=8;else if(d>0.05)bull+=6.4;else if(d>0.02)bull+=4.8;else if(d>0.005)bull+=2.4;
+  else if(d<-0.10)bear+=8;else if(d<-0.05)bear+=6.4;else if(d<-0.02)bear+=4.8;else if(d<-0.005)bear+=2.4;
+
+  // Momentum (2.5)
+  if(candles.length>=3){
+    const m1=candles[candles.length-1].close-candles[candles.length-1].open;
+    const m2=candles[candles.length-2].close-candles[candles.length-2].open;
+    if(m1>0&&m2>0)bull+=2.5;else if(m1<0&&m2<0)bear+=2.5;
+    else if(m1>0)bull+=1.25;else if(m1<0)bear+=1.25;
+  }
+  // 3m trend (2)
+  if(candles.length>=4){
+    const s=candles.slice(-3);
+    const bc=s.filter(x=>x.close>x.open).length,rc=s.filter(x=>x.close<x.open).length;
+    if(bc===3)bull+=2;else if(rc===3)bear+=2;else if(bc===2)bull+=1;else if(rc===2)bear+=1;
+  }
+  // 5m bias (1.5)
+  if(candles.length>=6){
+    const mv=candles[candles.length-1].close-candles[candles.length-5].open;
+    const pv=(mv/candles[candles.length-5].open)*100;
+    if(pv>0.08)bull+=1.5;else if(pv>0.02)bull+=0.9;else if(pv<-0.08)bear+=1.5;else if(pv<-0.02)bear+=0.9;
+  }
+  // EMA (1)
+  if(candles.length>=22){
+    const cl=candles.map(x=>x.close);
+    const e9=ema(cl.slice(-9),9),e21=ema(cl.slice(-21),21),g=((e9-e21)/e21)*100;
+    if(g>0.02)bull+=1;else if(g<-0.02)bear+=1;
+  }
+  // RSI (1.5)
+  if(candles.length>=16){
+    const r=rsi(candles.map(x=>x.close),14);
+    if(r<25)bull+=1.5;else if(r<35)bull+=0.75;else if(r>75)bear+=1.5;else if(r>65)bear+=0.75;
+  }
+  // Market odds (2)
+  if(yp>0.70)bull+=2;else if(yp>0.55)bull+=1.2;else if(np>0.70)bear+=2;else if(np>0.55)bear+=1.2;
+  // Wick (1.5)
+  if(candles.length>=2){
+    const l=candles[candles.length-1],body=Math.abs(l.close-l.open),range=l.high-l.low;
+    if(range>0){const uw=(l.high-Math.max(l.open,l.close))/range,lw=(Math.min(l.open,l.close)-l.low)/range;
+    if(uw>0.5&&body/range<0.3)bear+=1.5;else if(lw>0.5&&body/range<0.3)bull+=1.5;}
+  }
+  // Mean reversion (1)
+  if(candles.length>=10){
+    const m=avg(candles.slice(-10).map(x=>x.close)),dev=((cp-m)/m)*100;
+    if(dev>0.15)bear+=0.8;else if(dev<-0.15)bull+=0.8;
+  }
+
+  const total=bull+bear,edge=Math.abs(bull-bear);
+  let conf=total>0?edge/total:0;
+  // Choppiness penalty
+  if(candles.length>=5){
+    let dc=0;const sl=candles.slice(-5);
+    for(let i=1;i<sl.length;i++){const p=sl[i-1].close-sl[i-1].open,q=sl[i].close-sl[i].open;if((p>0&&q<0)||(p<0&&q>0))dc++;}
+    conf-=(dc/4)*0.15;
+  }
+  // Volume boost
+  if(candles.length>=7){
+    const ra=avg(candles.slice(-3).map(x=>x.volume)),pa=avg(candles.slice(-6,-3).map(x=>x.volume));
+    if(ra/pa>1.5)conf+=0.1;else if(ra/pa<0.6)conf-=0.1;
+  }
+  // Timing boost at optimal window
+  if(elapsed>=90&&elapsed<=180)conf+=0.1;
+  conf=clamp(conf,0,1);
+  const quality=clamp(((total/22)+conf)/2,0,1);
+
+  // Token price & EV
+  const absDelta=Math.abs(d);
+  const correctDir=(bull>bear&&d>0)||(bear>bull&&d<0);
+  let tokenPrice=0.50;
+  if(correctDir){if(absDelta<0.005)tokenPrice=0.50;else if(absDelta<0.02)tokenPrice=0.55;else if(absDelta<0.05)tokenPrice=0.65;else if(absDelta<0.10)tokenPrice=0.78;else tokenPrice=0.88;}
+  else{if(absDelta<0.02)tokenPrice=0.50;else if(absDelta<0.05)tokenPrice=0.35;else tokenPrice=0.20;}
+  const winProb=total>0?(bull>bear?bull/total:bear/total):0.5;
+  const ev=winProb*1.00-tokenPrice*1.02;
+
+  let decision='NO TRADE',reason='';
+  if(conf<0.28){decision='NO TRADE';reason='confidence too low ('+Math.round(conf*100)+'%)';}
+  else if(edge<1.0){decision='NO TRADE';reason='edge too small ('+edge.toFixed(1)+')';}
+  else if(tokenPrice>0.87){decision='NO TRADE';reason='token overpriced ¢'+Math.round(tokenPrice*100);}
+  else if(ev<0){decision='NO TRADE';reason='negative EV ('+(ev*100).toFixed(1)+'%)';}
+  else if(bull>bear){decision='BUY UP';reason='bull '+bull.toFixed(1)+' vs bear '+bear.toFixed(1)+' | EV +'+(ev*100).toFixed(1)+'%';}
+  else{decision='BUY DOWN';reason='bear '+bear.toFixed(1)+' vs bull '+bull.toFixed(1)+' | EV +'+(ev*100).toFixed(1)+'%';}
+
+  console.log('[ENGINE] DECISION:',decision,'| conf:'+Math.round(conf*100)+'% edge:'+edge.toFixed(1)+' EV:'+(ev*100).toFixed(1)+'%');
+
+  lockedDecision={
+    wts:currentMarket.wts,decision,reason,bull,bear,conf,quality,edge,ev,
+    tokenPrice,winProb,deltaPct:d.toFixed(4),startPrice:sp,
+    lockedAt:Date.now(),lockedAtElapsed:elapsed,resolved:false
+  };
+
+  // Add PENDING to tracker
+  const time=new Date(currentMarket.wts*1000).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'America/New_York'});
+  tracker.history=tracker.history.filter(h=>h.window!==currentMarket.wts);
+  tracker.history.push({time,decision,result:'PENDING',window:currentMarket.wts});
+  if(tracker.history.length>50)tracker.history.shift();
+  saveTracker();
+  renderTracker();
+  renderPredCard(lockedDecision);
+
+  // Watchdog — re-render every 30s in case user refreshed
+  setTimeout(()=>{
+    if(lockedDecision&&!lockedDecision.resolved) renderPredCard(lockedDecision);
+  },30000);
+}
+
+function renderPredCard(d){
+  const card=document.getElementById('engine-card');
+  if(!card||!d)return;
+  const{decision,reason,bull,bear,conf,quality,edge,ev,tokenPrice,lockedAt,lockedAtElapsed}=d;
   const dc=decision==='BUY UP'?'up':decision==='BUY DOWN'?'down':'none';
   const icon=decision==='BUY UP'?'↑':decision==='BUY DOWN'?'↓':'—';
   const lbl=decision==='BUY UP'?'YES · UP':decision==='BUY DOWN'?'NO · DOWN':'NO TRADE';
   const confColor=dc==='up'?'var(--green)':dc==='down'?'var(--red)':'var(--amber)';
-  const cPct=Math.round((conf||0)*100);
-  const qPct=Math.round((quality||0)*100);
-  const evPct=ev!=null?((ev)*100).toFixed(1):'—';
+  const cPct=Math.round((conf||0)*100),qPct=Math.round((quality||0)*100);
+  const evPct=ev!=null?((ev>0?'+':'')+( ev*100).toFixed(1)+'%'):'—';
   const evColor=ev>0?'var(--green)':ev<0?'var(--red)':'var(--sub)';
   const tokenCents=tokenPrice?Math.round(tokenPrice*100):'—';
   const lockedTime=lockedAt?new Date(lockedAt).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true,timeZone:'America/New_York'})+' ET':'—';
-
-  function b(bv,rv){if(bv>0&&bv>=rv)return`<span class="sig-badge sb">BULL ${bv.toFixed(1)}</span>`;if(rv>0&&rv>bv)return`<span class="sig-badge sr">BEAR ${rv.toFixed(1)}</span>`;return`<span class="sig-badge sn">NEUT</span>`;}
-  function mb(mod){if(!mod)return`<span class="sig-badge sn">—</span>`;if(mod>0)return`<span class="sig-badge sb">+${(mod*100).toFixed(0)}%</span>`;return`<span class="sig-badge sr">${(mod*100).toFixed(0)}%</span>`;}
-
-  const s=signals||{};
-  const W2={windowDelta:8,momentum:2.5,trend3:2,trend5:1.5,ema:1,rsi:1.5,odds:2,wick:1.5,meanRev:1};
-  const rows = s.s1 ? `
-    <div class="sig-row"><div class="sig-left"><div class="sig-name">Window Delta</div><div class="sig-note">${s.s1?.note||'—'}</div></div>${b((s.s1?.bull||0)*W2.windowDelta,(s.s1?.bear||0)*W2.windowDelta)}</div>
-    <div class="sig-row"><div class="sig-left"><div class="sig-name">Market Odds</div><div class="sig-note">${s.s8?.note||'—'}</div></div>${b((s.s8?.bull||0)*W2.odds,(s.s8?.bear||0)*W2.odds)}</div>
-    <div class="sig-row"><div class="sig-left"><div class="sig-name">1m Momentum</div><div class="sig-note">${s.s2?.note||'—'}</div></div>${b((s.s2?.bull||0)*W2.momentum,(s.s2?.bear||0)*W2.momentum)}</div>
-    <div class="sig-row"><div class="sig-left"><div class="sig-name">3m Trend</div><div class="sig-note">${s.s3?.note||'—'}</div></div>${b((s.s3?.bull||0)*W2.trend3,(s.s3?.bear||0)*W2.trend3)}</div>
-    <div class="sig-row"><div class="sig-left"><div class="sig-name">5m Bias</div><div class="sig-note">${s.s4?.note||'—'}</div></div>${b((s.s4?.bull||0)*W2.trend5,(s.s4?.bear||0)*W2.trend5)}</div>
-    <div class="sig-row"><div class="sig-left"><div class="sig-name">EMA 9/21</div><div class="sig-note">${s.s5?.note||'—'}</div></div>${b((s.s5?.bull||0)*W2.ema,(s.s5?.bear||0)*W2.ema)}</div>
-    <div class="sig-row"><div class="sig-left"><div class="sig-name">RSI (14)</div><div class="sig-note">${s.s6?.note||'—'}</div></div>${b((s.s6?.bull||0)*W2.rsi,(s.s6?.bear||0)*W2.rsi)}</div>
-    <div class="sig-row"><div class="sig-left"><div class="sig-name">Wick Rejection</div><div class="sig-note">${s.s9?.note||'—'}</div></div>${b((s.s9?.bull||0)*W2.wick,(s.s9?.bear||0)*W2.wick)}</div>
-    <div class="sig-row"><div class="sig-left"><div class="sig-name">Mean Reversion</div><div class="sig-note">${s.s10?.note||'—'}</div></div>${b((s.s10?.bull||0)*W2.meanRev,(s.s10?.bear||0)*W2.meanRev)}</div>
-    <div class="sig-row"><div class="sig-left"><div class="sig-name">Volume</div><div class="sig-note">${s.s7?.note||'—'}</div></div>${mb(s.s7?.mod)}</div>
-    <div class="sig-row"><div class="sig-left"><div class="sig-name">Timing</div><div class="sig-note">${s.timing?.note||'—'}</div></div><span class="sig-badge sn">${s.timing?.note||'—'}</span></div>
-  ` : '<div class="th-empty">Awaiting first signal...</div>';
-
   card.className='pred-card '+dc;
   card.innerHTML=`
     <div class="pred-head">
-      <div class="pred-head-left">Signal Engine · Server</div>
+      <div class="pred-head-left">Signal Engine</div>
       <div class="pred-head-right">Locked ${lockedTime} · <span id="eng-countdown">—</span> left</div>
     </div>
     <div class="pred-main ${dc}">
       <div class="pred-icon">${icon}</div>
       <div class="pred-label">${lbl}</div>
-      <div class="pred-sublabel" style="margin-bottom:6px">${decision==='BUY UP'?'BTC predicted to close above PTB':decision==='BUY DOWN'?'BTC predicted to close below PTB':'Signals mixed or conditions not met'}</div>
+      <div class="pred-sublabel">${decision==='BUY UP'?'BTC predicted to finish above PTB':decision==='BUY DOWN'?'BTC predicted to finish below PTB':'Signals mixed — skip this window'}</div>
       <div class="pred-scores-inline"><span class="bull">Bull ${(bull||0).toFixed(1)}</span> vs <span class="bear">Bear ${(bear||0).toFixed(1)}</span></div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border)">
       <div style="padding:12px 16px;border-right:1px solid var(--border)">
-        <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace;margin-bottom:4px">Expected Value</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:${evColor}">${ev!=null?(ev>0?'+':'')+evPct+'%':'—'}</div>
-        <div style="font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:2px">after ~2% fee</div>
+        <div class="pc-label">Expected Value</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;color:${evColor}">${evPct}</div>
+        <div class="pc-hint">after ~2% fee</div>
       </div>
       <div style="padding:12px 16px">
-        <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace;margin-bottom:4px">Est. Token Cost</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700">¢${tokenCents}</div>
-        <div style="font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:2px">sweet spot ¢52–¢80</div>
+        <div class="pc-label">Est. Token Cost</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700">¢${tokenCents}</div>
+        <div class="pc-hint">sweet spot ¢52–¢80</div>
       </div>
     </div>
     <div class="conf-section">
@@ -660,43 +768,19 @@ function renderPredCard(d) {
       <div class="nc-label">Window closes in</div>
       <div class="nc-time" id="eng-window-left">—</div>
     </div>
-    <div class="signals-section">
-      <div class="signals-title">Signal Breakdown · locked at T+${lockedAtElapsed||'?'}s</div>
-      <div class="sig-list">${rows}</div>
-    </div>
-    <div class="pred-reason"><div class="reason-txt">⟶ ${reason||'—'}</div></div>
-  `;
+    <div class="pred-reason"><div class="reason-txt">⟶ ${reason}</div></div>`;
 }
 
-// Live window countdown
+// Countdown ticker
 setInterval(()=>{
-  if(!currentMarket) return;
+  if(!currentMarket)return;
   const s=Math.max(0,currentMarket.endSec-Math.floor(Date.now()/1000));
-  const wl=document.getElementById('eng-window-left');
-  const cd=document.getElementById('eng-countdown');
-  if(wl) wl.textContent=fmtT(s);
-  if(cd) cd.textContent=fmtT(s);
+  const wl=document.getElementById('eng-window-left'),cd=document.getElementById('eng-countdown');
+  if(wl)wl.textContent=fmtT(s);
+  if(cd)cd.textContent=fmtT(s);
 },1000);
 
 loadTracker();
-
-// Update waiting message with live countdown
-setInterval(()=>{
-  if(!currentMarket) return;
-  const elapsed=300-Math.max(0,currentMarket.endSec-Math.floor(Date.now()/1000));
-  const el=document.getElementById('engine-wait-msg');
-  if(!el) return;
-  if(elapsed<60){
-    const wait=60-elapsed;
-    el.textContent=`Signal fires in ~${wait}s (waiting for T+60s)`;
-  } else {
-    el.textContent='Evaluating signals...';
-  }
-},1000);
-
-// Redraw graph on window resize
-window.addEventListener('resize',()=>{ if(tracker.history?.length) drawEquityCurve(); });
 </script>
 </body>
 </html>
-
