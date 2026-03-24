@@ -138,6 +138,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
       <div class="tb-badge">ADMIN</div>
     </div>
     <div class="tb-r">
+      <a href="/" style="font-size:9px;font-weight:700;font-family:'JetBrains Mono',monospace;padding:3px 10px;border-radius:20px;border:1px solid var(--border2);color:var(--muted);text-decoration:none;transition:all .2s" onmouseover="this.style.color='var(--green)';this.style.borderColor='var(--gb)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border2)'">← MAIN SITE</a>
       <div class="tb-clock" id="admin-clock">--:--:-- UTC</div>
       <button class="logout-btn" onclick="logout()">Sign Out</button>
     </div>
@@ -216,7 +217,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
         <div style="font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:monospace;min-width:90px">Decision</div>
         <div style="font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:monospace;min-width:55px">Token</div>
         <div style="font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:monospace;min-width:55px">Bet</div>
-        <div style="font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:monospace;min-width:65px">If Win</div>
+        <div style="font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:monospace;min-width:65px">Payout (x)</div>
         <div style="font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:monospace;flex:1;text-align:right">P&L</div>
         <div style="font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:monospace;min-width:55px;text-align:center;margin-left:8px">Result</div>
       </div>
@@ -362,7 +363,7 @@ function renderStats(d){
       <div class="tr-dec ${isUp?'up':'dn'}">${isUp?'↑ YES · UP':'↓ NO · DOWN'}</div>
       <div class="tr-price">¢${Math.round(t.tokenPrice*100)}</div>
       <div class="tr-bet">$${fmt(t.betSize)}</div>
-      <div class="tr-payout">$${fmt(t.potentialPayout)}</div>
+      <div class="tr-payout">$${fmt(t.potentialPayout)} <span style="color:var(--muted);font-size:8px">(${(1/t.tokenPrice).toFixed(2)}x)</span></div>
       <div class="tr-pnl ${pnlClass}">${pnlTxt}</div>
       <div style="min-width:55px;text-align:center;margin-left:8px"><span class="tr-badge ${rc}">${t.result}</span></div>
     </div>`;
