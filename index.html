@@ -3,146 +3,176 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PolyPing · 5M</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<title>PolyPing · 5M BTC Signals</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0b0b0f;--c1:#111116;--c2:#17171e;
-  --border:#25252f;--border2:#32323f;--text:#f4f4fb;--sub:#8888a8;--muted:#44445a;
+  --bg:#09090d;--c1:#0d0d13;--c2:#111118;--c3:#16161e;
+  --border:#1e1e2a;--border2:#2a2a38;
+  --text:#f0f0f8;--sub:#7070a0;--muted:#3c3c56;
   --green:#00e87a;--gd:rgba(0,232,122,0.07);--gb:rgba(0,232,122,0.18);
   --red:#ff3366;--rd:rgba(255,51,102,0.07);--rb:rgba(255,51,102,0.18);
-  --amber:#ffbb00;--blue:#5599ff;--purple:#aa77ff;--radius:14px;
+  --amber:#ffbb00;--purple:#aa77ff;--blue:#5599ff;
+  --r:14px;
 }
+html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased;padding:0 0 60px}
-#topbar{position:sticky;top:0;z-index:99;background:rgba(11,11,15,.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:12px 18px;display:flex;align-items:center;justify-content:space-between}
-.tb-brand{display:flex;align-items:center;gap:10px}
-.tb-icon{width:28px;height:28px;background:#f7931a;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;font-family:'JetBrains Mono',monospace}
-.tb-name{font-size:14px;font-weight:800;letter-spacing:-.4px}
+mono,m{font-family:'JetBrains Mono',monospace}
+
+/* ── TOPBAR ── */
+#topbar{position:sticky;top:0;z-index:99;background:rgba(9,9,13,.96);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:11px 16px;display:flex;align-items:center;justify-content:space-between}
+.tb-l{display:flex;align-items:center;gap:9px}
+.tb-icon{width:27px;height:27px;background:#f7931a;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#fff;font-family:'JetBrains Mono',monospace;flex-shrink:0}
+.tb-name{font-size:15px;font-weight:800;letter-spacing:-.5px}
 .tb-tag{font-size:10px;color:var(--sub);margin-top:1px}
-.tb-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
-.ws-pill{display:flex;align-items:center;gap:5px;font-size:9px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.06em;padding:3px 8px;border-radius:20px;border:1px solid;transition:all .3s}
+.tb-r{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.ws-pill{display:flex;align-items:center;gap:5px;font-size:9px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.06em;padding:3px 9px;border-radius:20px;border:1px solid;transition:all .3s}
 .ws-pill.connected{color:var(--green);border-color:var(--gb);background:var(--gd)}
 .ws-pill.connecting{color:var(--amber);border-color:rgba(255,187,0,.3);background:rgba(255,187,0,.07)}
 .ws-pill.disconnected{color:var(--muted);border-color:var(--border2)}
 .ws-dot{width:4px;height:4px;border-radius:50%;background:currentColor}
-.ws-pill.connected .ws-dot{animation:blink 1.5s ease-in-out infinite}
+.ws-pill.connected .ws-dot,.live-badge.live .ws-dot{animation:blink 1.4s ease-in-out infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
 #tb-clock{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted)}
-#hero{padding:22px 18px 18px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,var(--c1) 0%,var(--bg) 100%);display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
-.hero-label{font-size:9px;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;font-family:'JetBrains Mono',monospace;margin-bottom:5px}
-#btc-price{font-family:'JetBrains Mono',monospace;font-size:34px;font-weight:700;letter-spacing:-2px;transition:color .2s}
+
+/* ── HERO ── */
+#hero{padding:20px 16px 16px;border-bottom:1px solid var(--border);display:flex;align-items:flex-end;justify-content:space-between;gap:12px;background:linear-gradient(180deg,var(--c1) 0%,var(--bg) 100%)}
+.hero-lbl{font-size:9px;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;font-family:'JetBrains Mono',monospace;margin-bottom:5px}
+#btc-price{font-family:'JetBrains Mono',monospace;font-size:32px;font-weight:700;letter-spacing:-2px;transition:color .2s}
 #btc-price.up{color:var(--green)}#btc-price.down{color:var(--red)}
 .hero-sub{display:flex;align-items:center;gap:6px;margin-top:5px}
-.cl-chip{font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;background:rgba(68,136,255,.12);border:1px solid rgba(68,136,255,.25);color:#6699ff;padding:2px 5px;border-radius:2px}
+.cl-chip{font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;background:rgba(68,136,255,.1);border:1px solid rgba(68,136,255,.22);color:#6699ff;padding:2px 5px;border-radius:2px}
 .hero-sub-txt{font-size:10px;color:var(--sub)}
-.hero-right{text-align:right}
-.hero-wl{font-size:9px;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;font-family:'JetBrains Mono',monospace;margin-bottom:3px}
-#hero-window{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--sub)}
-.sec-label{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;padding:16px 16px 8px;font-family:'JetBrains Mono',monospace}
-.card{background:var(--c1);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin:0 12px 10px}
+.hero-r{text-align:right;flex-shrink:0}
+.hero-wl{font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
+#hero-window{font-size:11px;color:var(--sub);font-family:'JetBrains Mono',monospace}
+
+/* ── PAGE LAYOUT ── */
+.sec-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;padding:14px 16px 7px;font-family:'JetBrains Mono',monospace}
+#page-body{display:block}
+.left-col,.right-col{padding:0}
+
+/* ── CARDS ── */
+.card{background:var(--c1);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin:0 12px 10px}
 .card.live{border-color:rgba(0,232,122,.15)}
-.card-head{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--c2)}
-.card-head-title{font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.05em}
+.card-head{padding:11px 15px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--c2)}
+.card-title{font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.05em}
 .live-badge{display:flex;align-items:center;gap:5px;font-size:9px;font-weight:700;font-family:'JetBrains Mono',monospace;padding:3px 9px;border-radius:20px;border:1px solid}
 .live-badge.live{color:var(--green);border-color:var(--gb);background:var(--gd)}
-.live-badge.live .ws-dot{animation:blink 1.2s ease-in-out infinite}
 .live-badge.settled{color:var(--muted);border-color:var(--border2)}
+
+/* prices */
 .price-grid{display:grid;grid-template-columns:1fr 1fr;background:var(--border);gap:1px;border-bottom:1px solid var(--border)}
-.price-col{background:var(--c1);padding:14px 16px}
-.pc-label{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace;margin-bottom:6px}
-.pc-val{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;letter-spacing:-1px}
+.price-col{background:var(--c1);padding:13px 15px}
+.pc-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace;margin-bottom:5px}
+.pc-val{font-family:'JetBrains Mono',monospace;font-size:19px;font-weight:700;letter-spacing:-1px}
 .pc-hint{font-size:9px;color:var(--muted);margin-top:3px;font-family:'JetBrains Mono',monospace}
-.dchip{display:inline-flex;align-items:center;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;padding:2px 7px;border-radius:4px;margin-top:5px}
+.dchip{display:inline-flex;align-items:center;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;padding:2px 7px;border-radius:4px;margin-top:4px}
 .dchip.up{background:var(--gd);color:var(--green);border:1px solid var(--gb)}
 .dchip.down{background:var(--rd);color:var(--red);border:1px solid var(--rb)}
-.dchip.flat{background:rgba(68,68,90,.12);color:var(--sub);border:1px solid var(--border2)}
-.vs-bar{padding:10px 16px;border-bottom:1px solid var(--border);background:var(--c2);text-align:center}
-.vs-label{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace;margin-bottom:4px}
-.vs-val{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700}
+.dchip.flat{background:rgba(60,60,86,.12);color:var(--sub);border:1px solid var(--border2)}
+
+/* vs bar */
+.vs-bar{padding:9px 15px;border-bottom:1px solid var(--border);background:var(--c2);text-align:center}
+.vs-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace;margin-bottom:3px}
+.vs-val{font-size:14px;font-weight:700;font-family:'JetBrains Mono',monospace}
 .vs-val.up{color:var(--green)}.vs-val.down{color:var(--red)}.vs-val.flat{color:var(--sub)}
-.timer-row{padding:8px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--c2)}
-.timer-label{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:'JetBrains Mono',monospace;flex-shrink:0}
-#timer-val{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;min-width:40px}
+
+/* timer */
+.timer-row{display:flex;align-items:center;gap:10px;padding:7px 15px;border-bottom:1px solid var(--border);background:var(--c2)}
+.timer-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:'JetBrains Mono',monospace;flex-shrink:0}
+#timer-val{font-size:13px;font-weight:700;font-family:'JetBrains Mono',monospace;min-width:38px;color:var(--amber)}
 .timer-track{flex:1;height:3px;background:var(--border2);border-radius:2px;overflow:hidden}
 .timer-fill{height:100%;border-radius:2px;transition:width 1s linear}
-.odds-grid{padding:10px 16px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.odd{border-radius:8px;padding:10px 12px;border:1px solid;display:flex;flex-direction:column;gap:4px}
+
+/* odds */
+.odds-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 15px}
+.odd{border-radius:8px;padding:10px 11px;border:1px solid;display:flex;flex-direction:column;gap:3px}
 .odd.yes{background:var(--gd);border-color:var(--gb)}.odd.no{background:var(--rd);border-color:var(--rb)}
 .odd-top{display:flex;align-items:center;justify-content:space-between}
 .odd-dir{font-size:10px;font-weight:800}
 .odd.yes .odd-dir{color:var(--green)}.odd.no .odd-dir{color:var(--red)}
-.odd-pct{font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--sub)}
+.odd-pct{font-size:9px;color:var(--sub);font-family:'JetBrains Mono',monospace}
 .odd-price{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;letter-spacing:-1px;line-height:1}
 .odd.yes .odd-price{color:var(--green)}.odd.no .odd-price{color:var(--red)}
-.odd-unit{font-size:9px;color:var(--sub);font-family:'JetBrains Mono',monospace}
+.odd-unit{font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace}
 .odd-pay{font-size:9px;color:var(--sub);font-family:'JetBrains Mono',monospace}
 .odd.yes .odd-pay strong{color:var(--green)}.odd.no .odd-pay strong{color:var(--red)}
-.pred-card{background:var(--c1);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin:0 12px 10px;transition:border-color .4s}
+
+/* ── PREDICTION CARD ── */
+.pred-card{background:var(--c1);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin:0 12px 10px;transition:border-color .4s}
 .pred-card.up{border-color:rgba(0,232,122,.25)}.pred-card.down{border-color:rgba(255,51,102,.25)}.pred-card.none{border-color:rgba(255,187,0,.15)}
-.pred-head{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--c2)}
-.pred-head-left{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-family:'JetBrains Mono',monospace}
-.pred-head-right{font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--muted)}
-.pred-main{padding:24px 16px 18px;text-align:center}
+.pred-head{padding:11px 15px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--c2)}
+.pred-head-l{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-family:'JetBrains Mono',monospace}
+.pred-head-r{font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+.pred-main{padding:22px 15px 16px;text-align:center}
 .pred-main.up{background:linear-gradient(180deg,rgba(0,232,122,.06) 0%,transparent 100%)}
 .pred-main.down{background:linear-gradient(180deg,rgba(255,51,102,.06) 0%,transparent 100%)}
 .pred-main.none{background:linear-gradient(180deg,rgba(255,187,0,.04) 0%,transparent 100%)}
-.pred-icon{font-size:26px;margin-bottom:6px;line-height:1}
-.pred-label{font-size:34px;font-weight:900;letter-spacing:-1.5px;line-height:1;margin-bottom:6px}
-.pred-main.up .pred-label{color:var(--green)}.pred-main.down .pred-label{color:var(--red)}.pred-main.none .pred-label{color:var(--amber)}
-.pred-sublabel{font-size:11px;color:var(--sub);font-family:'JetBrains Mono',monospace;margin-bottom:8px}
+.pred-icon{font-size:24px;margin-bottom:5px;line-height:1}
+.pred-lbl{font-size:32px;font-weight:900;letter-spacing:-1.5px;line-height:1;margin-bottom:6px}
+.pred-main.up .pred-lbl{color:var(--green)}.pred-main.down .pred-lbl{color:var(--red)}.pred-main.none .pred-lbl{color:var(--amber)}
+.pred-sub{font-size:11px;color:var(--sub);font-family:'JetBrains Mono',monospace;margin-bottom:7px}
 .pred-scores{font-size:11px;color:var(--sub);font-family:'JetBrains Mono',monospace}
-.pred-scores .bull{color:var(--green);font-weight:700}.pred-scores .bear{color:var(--red);font-weight:700}
-.conf-section{padding:10px 16px;border-top:1px solid var(--border)}
+.bull{color:var(--green);font-weight:700}.bear{color:var(--red);font-weight:700}
+.conf-sec{padding:9px 15px;border-top:1px solid var(--border)}
 .conf-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
-.conf-label{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace}
-.conf-pct{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700}
+.conf-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace}
+.conf-pct{font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace}
 .conf-track{height:5px;background:var(--border2);border-radius:3px;overflow:hidden}
 .conf-fill{height:100%;border-radius:3px;transition:width .6s ease}
-.next-check{padding:14px 16px;text-align:center;border-top:1px solid var(--border);background:var(--c2)}
-.nc-label{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace;margin-bottom:4px}
-.nc-time{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;color:var(--amber)}
-.pred-reason{padding:10px 16px;border-top:1px solid var(--border);background:var(--c2)}
-.reason-txt{font-size:9px;color:var(--sub);font-family:'JetBrains Mono',monospace;line-height:1.6}
-.tracker-card{background:var(--c1);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin:0 12px 10px}
-.tracker-head{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--c2)}
-.tracker-head-title{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-family:'JetBrains Mono',monospace}
-.tracker-stats{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--border)}
-.ts-cell{padding:12px 10px;text-align:center;border-right:1px solid var(--border)}
-.ts-cell:last-child{border-right:none}
-.ts-label{font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:'JetBrains Mono',monospace;margin-bottom:4px}
-.ts-val{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700}
-.ts-val.win{color:var(--green)}.ts-val.loss{color:var(--red)}.ts-val.skip{color:var(--sub)}.ts-val.rate{color:var(--amber)}
-.tracker-body{padding:12px 16px}
-.th-title{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace;margin-bottom:8px}
-.th-list{display:flex;flex-direction:column;gap:4px}
-.th-row{display:flex;align-items:center;justify-content:space-between;padding:5px 10px;border-radius:6px;background:var(--c2);border:1px solid var(--border)}
-.th-time{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);min-width:75px}
-.th-pred{font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;flex:1;text-align:center}
-.th-pred.up{color:var(--green)}.th-pred.down{color:var(--red)}.th-pred.skip{color:var(--sub)}
-.th-result{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px}
-.th-result.win{background:var(--gd);color:var(--green);border:1px solid var(--gb)}
-.th-result.loss{background:var(--rd);color:var(--red);border:1px solid var(--rb)}
-.th-result.pending{background:rgba(255,187,0,.08);color:var(--amber);border:1px solid rgba(255,187,0,.2)}
-.th-result.skip{background:rgba(68,68,90,.1);color:var(--muted);border:1px solid var(--border2)}
-.th-empty{text-align:center;padding:16px;font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace}
-.disclaimer{margin:0 12px 10px;padding:10px 14px;border-radius:8px;background:rgba(68,68,90,.06);border:1px solid var(--border)}
-.disclaimer-txt{font-size:9px;color:var(--muted);line-height:1.6;font-family:'JetBrains Mono',monospace;text-align:center}
-.loading{display:flex;flex-direction:column;align-items:center;padding:50px 20px;gap:12px;color:var(--muted);font-size:11px;font-family:'JetBrains Mono',monospace}
-.spinner{width:22px;height:22px;border:2px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
+.wc-block{padding:13px 15px;text-align:center;border-top:1px solid var(--border);background:var(--c2)}
+.wc-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace;margin-bottom:3px}
+.wc-val{font-size:20px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--amber)}
+.pred-reason{padding:9px 15px;border-top:1px solid var(--border);background:var(--c2);font-size:9px;color:var(--sub);font-family:'JetBrains Mono',monospace;line-height:1.6}
+
+/* ── TRACKER ── */
+.tracker-card{background:var(--c1);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin:0 12px 10px}
+.tracker-head{padding:11px 15px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--c2)}
+.tracker-title{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-family:'JetBrains Mono',monospace}
+.tracker-acc{font-size:9px;color:var(--sub);font-family:'JetBrains Mono',monospace}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--border)}
+.stat-cell{padding:11px 8px;text-align:center;border-right:1px solid var(--border)}
+.stat-cell:last-child{border-right:none}
+.stat-lbl{font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:'JetBrains Mono',monospace;margin-bottom:3px}
+.stat-val{font-size:20px;font-weight:700;font-family:'JetBrains Mono',monospace}
+.sv-win{color:var(--green)}.sv-loss{color:var(--red)}.sv-skip{color:var(--sub)}.sv-rate{color:var(--amber)}
+.tracker-body{padding:11px 15px}
+.eq-lbl,.rec-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace;margin-bottom:7px}
+.eq-chart{width:100%;height:60px;background:var(--c2);border-radius:6px;margin-bottom:12px;display:flex;align-items:flex-end;padding:8px 10px;gap:3px}
+.eq-bar{flex:1;border-radius:2px;min-height:3px}
+.rec-lbl{margin-top:2px}
+.rec-row{display:flex;align-items:center;justify-content:space-between;padding:5px 9px;border-radius:6px;background:var(--c2);border:1px solid var(--border);margin-bottom:4px}
+.rec-time{font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace;min-width:68px}
+.rec-pred{font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;flex:1;text-align:center}
+.rp-up{color:var(--green)}.rp-down{color:var(--red)}.rp-skip{color:var(--sub)}
+.rec-badge{font-size:9px;font-weight:700;font-family:'JetBrains Mono',monospace;padding:2px 7px;border-radius:3px}
+.rb-win{background:var(--gd);color:var(--green);border:1px solid var(--gb)}
+.rb-loss{background:var(--rd);color:var(--red);border:1px solid var(--rb)}
+.rb-pend{background:rgba(255,187,0,.08);color:var(--amber);border:1px solid rgba(255,187,0,.2)}
+.rb-skip{background:rgba(60,60,86,.1);color:var(--muted);border:1px solid var(--border2)}
+.rec-empty{text-align:center;padding:14px;font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+
+/* ── MISC ── */
+.disc{margin:0 12px 10px;padding:9px 13px;border-radius:8px;background:rgba(60,60,86,.06);border:1px solid var(--border);font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace;text-align:center;line-height:1.6}
+.loading{display:flex;flex-direction:column;align-items:center;padding:48px 20px;gap:11px;color:var(--muted);font-size:11px;font-family:'JetBrains Mono',monospace}
+.spinner{width:21px;height:21px;border:2px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── DESKTOP ── */
 @media(min-width:860px){
-  #topbar{padding:0 32px;height:52px}
-  #hero{padding:22px 32px 18px}
-  #page-body{display:grid;grid-template-columns:1fr 1fr;max-width:1100px;margin:0 auto;align-items:start}
+  #topbar{padding:0 28px;height:50px}
+  #hero{padding:20px 28px 16px}
+  #page-body{display:grid;grid-template-columns:1fr 1fr;max-width:1080px;margin:0 auto;align-items:start}
   .left-col{padding:0 8px 0 16px}
   .right-col{padding:0 16px 0 8px;border-left:1px solid var(--border)}
-  .sec-label{padding:16px 4px 8px}
+  .sec-lbl{padding:14px 4px 7px}
   .card,.pred-card,.tracker-card{margin:0 0 10px}
-  .disclaimer{margin:0 0 10px}
-  #tracker-full{max-width:1100px;margin:0 auto;padding:0 16px}
-  #tracker-full .sec-label{padding:16px 0 8px}
-  #tracker-full .tracker-card,#tracker-full .disclaimer{margin:0 0 10px}
+  .disc{margin:0 0 10px}
+  #tracker-full{max-width:1080px;margin:0 auto;padding:0 16px}
+  #tracker-full .sec-lbl{padding:14px 0 7px}
+  #tracker-full .tracker-card,#tracker-full .disc{margin:0 0 10px}
 }
 @media(max-width:859px){
   body{max-width:480px;margin:0 auto}
@@ -152,12 +182,13 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 </style>
 </head>
 <body>
+
 <div id="topbar">
-  <div class="tb-brand">
+  <div class="tb-l">
     <div class="tb-icon">₿</div>
     <div><div class="tb-name">PolyPing</div><div class="tb-tag">5-minute prediction markets</div></div>
   </div>
-  <div class="tb-right">
+  <div class="tb-r">
     <div class="ws-pill connecting" id="ws-pill"><div class="ws-dot"></div><span id="ws-label">CONNECTING</span></div>
     <div id="tb-clock">--:--:-- UTC</div>
   </div>
@@ -165,11 +196,11 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 
 <div id="hero">
   <div>
-    <div class="hero-label">Bitcoin / USD</div>
-    <div id="btc-price">—</div>
+    <div class="hero-lbl">Bitcoin / USD</div>
+    <div id="btc-price" style="font-family:'JetBrains Mono',monospace;font-size:32px;font-weight:700;letter-spacing:-2px">—</div>
     <div class="hero-sub"><div class="cl-chip">CHAINLINK</div><div class="hero-sub-txt">same oracle as Polymarket</div></div>
   </div>
-  <div class="hero-right">
+  <div class="hero-r">
     <div class="hero-wl">Current window</div>
     <div id="hero-window">—</div>
   </div>
@@ -177,16 +208,16 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 
 <div id="page-body">
   <div class="left-col">
-    <div class="sec-label">Market</div>
+    <div class="sec-lbl">Market</div>
     <div id="main"><div class="loading"><div class="spinner"></div><div>Connecting...</div></div></div>
   </div>
   <div class="right-col">
-    <div class="sec-label">Prediction</div>
+    <div class="sec-lbl">Prediction</div>
     <div id="engine-wrap">
       <div class="pred-card" id="engine-card">
         <div class="pred-head">
-          <div class="pred-head-left">Signal Engine</div>
-          <div class="pred-head-right" id="eng-status">Waiting...</div>
+          <div class="pred-head-l">Signal Engine</div>
+          <div class="pred-head-r" id="eng-status">Waiting...</div>
         </div>
         <div class="loading"><div class="spinner"></div><div id="eng-msg">Connecting to feed...</div></div>
       </div>
@@ -195,26 +226,26 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 </div>
 
 <div id="tracker-full">
-  <div class="sec-label">Track Record</div>
+  <div class="sec-lbl">Track Record</div>
   <div class="tracker-card">
     <div class="tracker-head">
-      <div class="tracker-head-title">Signal Performance</div>
-      <div style="font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace" id="tracker-session">Session</div>
+      <div class="tracker-title">Signal Performance</div>
+      <div class="tracker-acc" id="tracker-session">—</div>
     </div>
-    <div class="tracker-stats">
-      <div class="ts-cell"><div class="ts-label">Wins</div><div class="ts-val win" id="t-wins">0</div></div>
-      <div class="ts-cell"><div class="ts-label">Losses</div><div class="ts-val loss" id="t-losses">0</div></div>
-      <div class="ts-cell"><div class="ts-label">Skipped</div><div class="ts-val skip" id="t-skips">0</div></div>
-      <div class="ts-cell"><div class="ts-label">Win Rate</div><div class="ts-val rate" id="t-rate">—</div></div>
+    <div class="stats-row">
+      <div class="stat-cell"><div class="stat-lbl">Wins</div><div class="stat-val sv-win" id="t-wins">—</div></div>
+      <div class="stat-cell"><div class="stat-lbl">Losses</div><div class="stat-val sv-loss" id="t-losses">—</div></div>
+      <div class="stat-cell"><div class="stat-lbl">Skipped</div><div class="stat-val sv-skip" id="t-skips">—</div></div>
+      <div class="stat-cell"><div class="stat-lbl">Win Rate</div><div class="stat-val sv-rate" id="t-rate">—</div></div>
     </div>
     <div class="tracker-body">
-      <div class="th-title">Equity Curve</div>
-      <canvas id="equity-chart" height="70" style="width:100%;display:block;border-radius:6px;margin-bottom:14px"></canvas>
-      <div class="th-title">Recent Decisions</div>
-      <div class="th-list" id="tracker-list"><div class="th-empty">No decisions yet</div></div>
+      <div class="eq-lbl">Equity Curve</div>
+      <div class="eq-chart" id="eq-chart"></div>
+      <div class="rec-lbl">Recent Decisions</div>
+      <div id="tracker-list"><div class="rec-empty">No decisions yet</div></div>
     </div>
   </div>
-  <div class="disclaimer"><div class="disclaimer-txt">Not financial advice. Automated signal engine for informational purposes only.</div></div>
+  <div class="disc">Not financial advice. Automated signal engine for informational purposes only.</div>
 </div>
 
 <script>
@@ -233,6 +264,7 @@ setInterval(()=>{
 const fmt=(n,d=2)=>n==null||isNaN(n)?'—':parseFloat(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
 const fmtT=s=>`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
 
+// BTC price
 let lastBTCt=0;
 function setBTC(p){
   if(Date.now()-lastBTCt<1000)return; lastBTCt=Date.now();
@@ -242,6 +274,7 @@ function setBTC(p){
   prevBTC=p;
 }
 
+// Odds
 let lastOddsT=0,pendingOdds=null;
 function updateOdds(yes,no){pendingOdds={yes,no};if(Date.now()-lastOddsT<2000)return;applyOdds(yes,no);}
 function applyOdds(yes,no){
@@ -280,13 +313,13 @@ function render(market,odds){
   if(diff!=null){const usd=(diff>=0?'+':'')+fmt(diff);if(diff>0){vsClass='up';vsTxt='$'+usd+' (+'+diffPct+'%)';}else if(diff<0){vsClass='down';vsTxt='$'+usd+' ('+diffPct+'%)';}else{vsClass='flat';vsTxt='$0.00 (0.000%)';}}
   document.getElementById('main').innerHTML=`
   <div class="card ${isLive?'live':''}">
-    <div class="card-head"><div class="card-head-title">BTC Up or Down · ${fh(sd)}–${fh(ed)}</div><div class="live-badge ${isLive?'live':'settled'}"><div class="ws-dot"></div>${isLive?'LIVE':'SETTLED'}</div></div>
+    <div class="card-head"><div class="card-title">BTC Up or Down · ${fh(sd)}–${fh(ed)}</div><div class="live-badge ${isLive?'live':'settled'}"><div class="ws-dot"></div>${isLive?'LIVE':'SETTLED'}</div></div>
     <div class="price-grid">
-      <div class="price-col"><div class="pc-label">Price to Beat</div><div class="pc-val">${sp?'$'+fmt(sp):'—'}</div><div class="pc-hint">Chainlink at window open</div></div>
-      <div class="price-col"><div class="pc-label">Current Price</div><div class="pc-val" id="cur-val">${btcPrice?'$'+fmt(btcPrice):'—'}</div>${dirHtml}</div>
+      <div class="price-col"><div class="pc-lbl">Price to Beat</div><div class="pc-val">${sp?'$'+fmt(sp):'—'}</div><div class="pc-hint">Chainlink at window open</div></div>
+      <div class="price-col"><div class="pc-lbl">Current Price</div><div class="pc-val" id="cur-val">${btcPrice?'$'+fmt(btcPrice):'—'}</div>${dirHtml}</div>
     </div>
-    <div class="vs-bar"><div class="vs-label">Current vs Target</div><div class="vs-val ${vsClass}" id="vs-val">${vsTxt}</div></div>
-    ${isLive?`<div class="timer-row"><div class="timer-label">Closes in</div><div id="timer-val">${fmtT(secsLeft)}</div><div class="timer-track"><div class="timer-fill" id="timer-fill" style="width:${pct}%;background:${bc}"></div></div></div>`:''}
+    <div class="vs-bar"><div class="vs-lbl">Current vs Target</div><div class="vs-val ${vsClass}" id="vs-val">${vsTxt}</div></div>
+    ${isLive?`<div class="timer-row"><div class="timer-lbl">Closes in</div><div id="timer-val">${fmtT(secsLeft)}</div><div class="timer-track"><div class="timer-fill" id="timer-fill" style="width:${pct}%;background:${bc}"></div></div></div>`:''}
     <div class="odds-grid">
       <div class="odd yes"><div class="odd-top"><div class="odd-dir">↑ YES · Up</div><div class="odd-pct" id="yes-pct">${Math.round(yp*100)}% implied</div></div><div class="odd-price" id="yes-p">¢${Math.round(yp*100)}</div><div class="odd-unit">per share</div><div class="odd-pay" id="yes-pay">Pays <strong>${yp>0?(1/yp).toFixed(2):'—'}x</strong> if BTC closes higher</div></div>
       <div class="odd no"><div class="odd-top"><div class="odd-dir">↓ NO · Down</div><div class="odd-pct" id="no-pct">${Math.round(np*100)}% implied</div></div><div class="odd-price" id="no-p">¢${Math.round(np*100)}</div><div class="odd-unit">per share</div><div class="odd-pay" id="no-pay">Pays <strong>${np>0?(1/np).toFixed(2):'—'}x</strong> if BTC closes lower</div></div>
@@ -304,6 +337,8 @@ function startCd(){
     if(tv)tv.textContent=fmtT(s);
     if(tf){tf.style.width=p+'%';tf.style.background=p<20?'var(--red)':p<40?'var(--amber)':'var(--green)';}
     if(vv&&btcPrice&&currentMarket?.startPrice){const diff=btcPrice-currentMarket.startPrice,pct=((diff/currentMarket.startPrice)*100).toFixed(3),usd=(diff>=0?'+':'')+fmt(diff);if(diff>0){vv.className='vs-val up';vv.textContent='$'+usd+' (+'+pct+'%)';}else if(diff<0){vv.className='vs-val down';vv.textContent='$'+usd+' ('+pct+'%)';}else{vv.className='vs-val flat';vv.textContent='$0.00 (0.000%)';}}
+    const s2=Math.max(0,currentMarket.endSec-Math.floor(Date.now()/1000));
+    if(s2===0&&lockedDecision&&!lockedDecision.resolved&&btcPrice) resolveDecision();
   },1000);
 }
 
@@ -317,28 +352,26 @@ function connect(){
     const msg=JSON.parse(e.data);
     if(msg.type==='market'){
       const newWindow=!currentMarket||msg.market.wts!==currentMarket.wts;
-      if(newWindow&&currentMarket) resolveDecision();
-      currentMarket=msg.market; latestOdds=msg.odds;
+      if(newWindow&&currentMarket)resolveDecision();
+      currentMarket=msg.market;latestOdds=msg.odds;
       render(currentMarket,latestOdds);
       if(newWindow){
         lockedDecision=null;
-        // Show waiting state, decision comes from server
         const card=document.getElementById('engine-card');
-        if(card) card.innerHTML=`<div class="pred-head"><div class="pred-head-left">Signal Engine</div><div class="pred-head-right" id="eng-status">Analysing...</div></div><div class="loading"><div class="spinner"></div><div>Calculating signal...</div></div>`;
-      }
-      else if(lockedDecision) renderPredCard(lockedDecision);
+        if(card)card.innerHTML=`<div class="pred-head"><div class="pred-head-l">Signal Engine</div><div class="pred-head-r">Waiting for 60s mark...</div></div><div class="loading"><div class="spinner"></div><div>New window opened</div></div>`;
+      } else if(lockedDecision)renderPredCard(lockedDecision);
     }
     if(msg.type==='btc_price'){btcPrice=msg.price;setBTC(btcPrice);updateDir();}
     if(msg.type==='odds'){latestOdds={yes:msg.yes,no:msg.no};updateOdds(msg.yes,msg.no);}
     if(msg.type==='tracker'){tracker=msg.tracker;renderTracker();}
     if(msg.type==='engine_waiting'){
-      const card=document.getElementById('engine-card');
-      const wait=60-msg.elapsed;
-      if(card&&!lockedDecision) card.innerHTML=`<div class="pred-head"><div class="pred-head-left">Signal Engine</div><div class="pred-head-right">Fires in ~${wait}s</div></div><div class="loading"><div class="spinner"></div><div>Waiting for ${wait}s mark...</div></div>`;
+      const card=document.getElementById('engine-card'),wait=60-msg.elapsed;
+      if(card&&!lockedDecision)card.innerHTML=`<div class="pred-head"><div class="pred-head-l">Signal Engine</div><div class="pred-head-r">Fires in ~${wait}s</div></div><div class="loading"><div class="spinner"></div><div>Waiting for ${wait}s mark...</div></div>`;
     }
     if(msg.type==='decision'){
-      lockedDecision=msg.decision;
-      renderPredCard(lockedDecision);
+      if(msg.decision&&currentMarket&&msg.decision.wts===currentMarket.wts&&!msg.decision.resolved){
+        lockedDecision=msg.decision;renderPredCard(lockedDecision);
+      }
     }
   };
   ws.onclose=()=>{setWS('disconnected');setTimeout(connect,reconnDelay=Math.min(reconnDelay*1.5,15000));};
@@ -346,13 +379,12 @@ function connect(){
 }
 connect();
 
-// Tracker — read only, server owns all the math
+// Tracker — server owns all math
 async function loadTracker(){
-  try{const r=await fetch(API+'/tracker',{signal:AbortSignal.timeout(5000)});if(r.ok){tracker=await r.json();renderTracker();setTimeout(drawEquityCurve,300);}}catch(e){}
+  try{const r=await fetch(API+'/tracker',{signal:AbortSignal.timeout(5000)});if(r.ok){tracker=await r.json();renderTracker();}}catch(e){}
 }
 function resolveDecision(){
-  // Browser does nothing — server resolves when next window loads
-  if(lockedDecision) lockedDecision.resolved=true;
+  if(lockedDecision)lockedDecision.resolved=true;
 }
 function renderTracker(){
   const w=tracker.wins||0,l=tracker.losses||0,s=tracker.skips||0,t=w+l;
@@ -360,46 +392,38 @@ function renderTracker(){
   document.getElementById('t-losses').textContent=l;
   document.getElementById('t-skips').textContent=s;
   document.getElementById('t-rate').textContent=t>0?Math.round((w/t)*100)+'%':'—';
-  document.getElementById('tracker-session').textContent=t>0?`${w}W ${l}L · ${Math.round((w/t)*100)}% acc`:'Session';
-  drawEquityCurve();
+  document.getElementById('tracker-session').textContent=t>0?`${w}W ${l}L · ${Math.round((w/t)*100)}% acc`:'—';
+  drawEquityBars();
   const list=document.getElementById('tracker-list'),history=tracker.history||[];
-  if(!history.length){list.innerHTML='<div class="th-empty">No decisions yet</div>';return;}
-  // Only show last 4
+  if(!history.length){list.innerHTML='<div class="rec-empty">No decisions yet</div>';return;}
   list.innerHTML=[...history].reverse().slice(0,4).map(h=>{
-    const pc=h.decision==='BUY UP'?'up':h.decision==='BUY DOWN'?'down':'skip';
+    const pc=h.decision==='BUY UP'?'rp-up':h.decision==='BUY DOWN'?'rp-down':'rp-skip';
     const pt=h.decision==='BUY UP'?'↑ UP':h.decision==='BUY DOWN'?'↓ DOWN':'— SKIP';
-    const rc=h.result==='WIN'?'win':h.result==='LOSS'?'loss':h.result==='PENDING'?'pending':'skip';
-    return`<div class="th-row"><div class="th-time">${h.time}</div><div class="th-pred ${pc}">${pt}</div><div class="th-result ${rc}">${h.result}</div></div>`;
+    const rc=h.result==='WIN'?'rb-win':h.result==='LOSS'?'rb-loss':h.result==='PENDING'?'rb-pend':'rb-skip';
+    return`<div class="rec-row"><div class="rec-time">${h.time}</div><div class="rec-pred ${pc}">${pt}</div><div class="rec-badge ${rc}">${h.result}</div></div>`;
   }).join('');
 }
-function drawEquityCurve(){
-  const canvas=document.getElementById('equity-chart'); if(!canvas)return;
-  const W=canvas.getBoundingClientRect().width||canvas.parentElement?.offsetWidth||canvas.offsetWidth||300;
-  if(W<10){setTimeout(drawEquityCurve,500);return;}
-  const ctx=canvas.getContext('2d'),dpr=window.devicePixelRatio||1,H=70;
-  canvas.width=W*dpr; canvas.height=H*dpr; ctx.scale(dpr,dpr);
-  ctx.fillStyle='#111116'; ctx.fillRect(0,0,W,H);
+
+function drawEquityBars(){
+  const el=document.getElementById('eq-chart'); if(!el)return;
   const resolved=(tracker.history||[]).filter(h=>h.result==='WIN'||h.result==='LOSS');
-  if(resolved.length<2){ctx.fillStyle='#44445a';ctx.font='10px monospace';ctx.textAlign='center';ctx.fillText('Graph builds as decisions resolve',W/2,H/2+4);return;}
+  if(!resolved.length){el.innerHTML='<div style="width:100%;text-align:center;font-size:9px;color:var(--muted);font-family:monospace;align-self:center">Graph builds as decisions resolve</div>';return;}
+  // Build cumulative equity
   const pts=[0];
   for(const h of resolved)pts.push(pts[pts.length-1]+(h.result==='WIN'?1:-1));
-  const minP=Math.min(...pts),maxP=Math.max(...pts),range=Math.max(maxP-minP,2),pad=10;
-  const px=i=>pad+(i/(pts.length-1))*(W-pad*2),py=v=>H-pad-((v-minP)/range)*(H-pad*2);
-  const final=pts[pts.length-1],isPos=final>=0,color=isPos?'#00e87a':'#ff3366';
-  ctx.strokeStyle='#2a2a32';ctx.lineWidth=1;ctx.setLineDash([3,3]);
-  ctx.beginPath();ctx.moveTo(pad,py(0));ctx.lineTo(W-pad,py(0));ctx.stroke();ctx.setLineDash([]);
-  ctx.beginPath();ctx.moveTo(px(0),py(0));pts.forEach((v,i)=>ctx.lineTo(px(i),py(v)));ctx.lineTo(px(pts.length-1),py(0));ctx.closePath();
-  ctx.fillStyle=isPos?'rgba(0,232,122,0.1)':'rgba(255,51,102,0.1)';ctx.fill();
-  ctx.beginPath();ctx.moveTo(px(0),py(pts[0]));pts.forEach((v,i)=>{if(i>0)ctx.lineTo(px(i),py(v));});
-  ctx.strokeStyle=color;ctx.lineWidth=2;ctx.lineJoin='round';ctx.stroke();
-  ctx.beginPath();ctx.arc(px(pts.length-1),py(final),3,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();
-  ctx.fillStyle=color;ctx.font='bold 10px monospace';ctx.textAlign='right';
-  ctx.fillText((final>0?'+':'')+final,W-pad+2,py(final)+(final>=0?-5:13));
+  const vals=pts.slice(1); // one bar per resolved decision
+  const maxAbs=Math.max(1,...vals.map(v=>Math.abs(v)));
+  const show=vals.slice(-30); // last 30 bars
+  el.innerHTML=show.map((v,i)=>{
+    const prev=i>0?show[i-1]:0;
+    const isWin=v>prev;
+    const h=Math.max(8,Math.round((Math.abs(v)/maxAbs)*44));
+    return`<div class="eq-bar" style="height:${h}px;background:${isWin?'var(--green)':'var(--red)'}"></div>`;
+  }).join('');
 }
-window.addEventListener('resize',drawEquityCurve);
 
 function renderPredCard(d){
-  const card=document.getElementById('engine-card'); if(!card||!d)return;
+  const card=document.getElementById('engine-card');if(!card||!d)return;
   const{decision,reason,bull,bear,conf,quality,edge,lockedAt}=d;
   const dc=decision==='BUY UP'?'up':decision==='BUY DOWN'?'down':'none';
   const icon=decision==='BUY UP'?'↑':decision==='BUY DOWN'?'↓':'—';
@@ -409,28 +433,25 @@ function renderPredCard(d){
   const lt=lockedAt?new Date(lockedAt).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true,timeZone:'America/New_York'})+' ET':'—';
   card.className='pred-card '+dc;
   card.innerHTML=`
-    <div class="pred-head"><div class="pred-head-left">Signal Engine</div><div class="pred-head-right">Locked ${lt} · <span id="eng-cd">—</span></div></div>
+    <div class="pred-head"><div class="pred-head-l">Signal Engine</div><div class="pred-head-r">Locked ${lt} · <span id="eng-cd">—</span></div></div>
     <div class="pred-main ${dc}">
       <div class="pred-icon">${icon}</div>
-      <div class="pred-label">${lbl}</div>
-      <div class="pred-sublabel">${decision==='BUY UP'?'Predicted to close above PTB':decision==='BUY DOWN'?'Predicted to close below PTB':'Signals mixed — skip this window'}</div>
+      <div class="pred-lbl">${lbl}</div>
+      <div class="pred-sub">${decision==='BUY UP'?'Predicted to close above PTB':decision==='BUY DOWN'?'Predicted to close below PTB':'Signals mixed — skip window'}</div>
       <div class="pred-scores"><span class="bull">Bull ${(bull||0).toFixed(1)}</span> vs <span class="bear">Bear ${(bear||0).toFixed(1)}</span></div>
     </div>
-    <div class="conf-section"><div class="conf-row"><div class="conf-label">Confidence</div><div class="conf-pct" style="color:${cc}">${cPct}%</div></div><div class="conf-track"><div class="conf-fill" style="width:${cPct}%;background:${cc}"></div></div></div>
-    <div class="conf-section"><div class="conf-row"><div class="conf-label">Trade Quality</div><div class="conf-pct" style="color:var(--purple)">${qPct}%</div></div><div class="conf-track"><div class="conf-fill" style="width:${qPct}%;background:var(--purple)"></div></div></div>
-    <div class="next-check"><div class="nc-label">Window closes in</div><div class="nc-time" id="eng-wl">—</div></div>
-    <div class="pred-reason"><div class="reason-txt">⟶ ${reason}</div></div>`;
+    <div class="conf-sec"><div class="conf-row"><div class="conf-lbl">Confidence</div><div class="conf-pct" style="color:${cc}">${cPct}%</div></div><div class="conf-track"><div class="conf-fill" style="width:${cPct}%;background:${cc}"></div></div></div>
+    <div class="conf-sec" style="border-top:none;padding-top:0"><div class="conf-row"><div class="conf-lbl">Trade Quality</div><div class="conf-pct" style="color:var(--purple)">${qPct}%</div></div><div class="conf-track"><div class="conf-fill" style="width:${qPct}%;background:var(--purple)"></div></div></div>
+    <div class="wc-block"><div class="wc-lbl">Window closes in</div><div class="wc-val" id="eng-wl">—</div></div>
+    <div class="pred-reason">⟶ ${reason||'—'}</div>`;
 }
 
-// Countdown + auto-resolve when window closes
 setInterval(()=>{
-  if(!currentMarket) return;
+  if(!currentMarket)return;
   const s=Math.max(0,currentMarket.endSec-Math.floor(Date.now()/1000));
   const wl=document.getElementById('eng-wl'),cd=document.getElementById('eng-cd');
   if(wl)wl.textContent=fmtT(s);
   if(cd)cd.textContent=fmtT(s)+' left';
-  // Auto-resolve the moment window closes
-  if(s===0&&lockedDecision&&!lockedDecision.resolved&&btcPrice) resolveDecision();
 },1000);
 
 loadTracker();
