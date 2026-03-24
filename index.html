@@ -463,6 +463,7 @@ function renderTracker(){
   document.getElementById('t-skips').textContent=s;
   document.getElementById('t-rate').textContent=t>0?Math.round((w/t)*100)+'%':'—';
   document.getElementById('tracker-session').textContent=t>0?`${w}W ${l}L · ${Math.round((w/t)*100)}% acc`:'Session';
+  drawEquityCurve();
   const list=document.getElementById('tracker-list'), history=tracker.history||[];
   if(!history.length){list.innerHTML='<div class="th-empty">No decisions yet</div>';return;}
   list.innerHTML=[...history].reverse().slice(0,10).map(h=>{
@@ -613,6 +614,64 @@ setInterval(()=>{
   if(wl) wl.textContent=fmtT(s);
   if(cd) cd.textContent=fmtT(s)+' left';
 },1000);
+
+function drawEquityCurve() {
+  const canvas = document.getElementById('equity-chart');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.offsetWidth || 300, H = 70;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  ctx.scale(dpr, dpr);
+  ctx.fillStyle = '#111116'; ctx.fillRect(0, 0, W, H);
+
+  const resolved = (tracker.history||[]).filter(h => h.result==='WIN' || h.result==='LOSS');
+  if(resolved.length < 2) {
+    ctx.fillStyle = '#44445a'; ctx.font = '10px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('Graph builds as decisions resolve', W/2, H/2 + 4);
+    return;
+  }
+
+  // Build equity points: start at 0, +1 per WIN, -1 per LOSS
+  const pts = [0];
+  for(const h of resolved) pts.push(pts[pts.length-1] + (h.result==='WIN' ? 1 : -1));
+
+  const minP = Math.min(...pts), maxP = Math.max(...pts);
+  const range = Math.max(maxP - minP, 2);
+  const pad = 10;
+  const px = i => pad + (i / (pts.length-1)) * (W - pad*2);
+  const py = v => H - pad - ((v - minP) / range) * (H - pad*2);
+  const final = pts[pts.length-1];
+  const isPos = final >= 0;
+  const color = isPos ? '#00e87a' : '#ff3366';
+
+  // Zero line
+  ctx.strokeStyle = '#2a2a32'; ctx.lineWidth = 1; ctx.setLineDash([3,3]);
+  ctx.beginPath(); ctx.moveTo(pad, py(0)); ctx.lineTo(W-pad, py(0)); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Fill under curve
+  ctx.beginPath(); ctx.moveTo(px(0), py(0));
+  pts.forEach((v,i) => ctx.lineTo(px(i), py(v)));
+  ctx.lineTo(px(pts.length-1), py(0)); ctx.closePath();
+  ctx.fillStyle = isPos ? 'rgba(0,232,122,0.1)' : 'rgba(255,51,102,0.1)';
+  ctx.fill();
+
+  // Line
+  ctx.beginPath(); ctx.moveTo(px(0), py(pts[0]));
+  pts.forEach((v,i) => { if(i>0) ctx.lineTo(px(i), py(v)); });
+  ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.lineJoin = 'round'; ctx.stroke();
+
+  // End dot
+  ctx.beginPath(); ctx.arc(px(pts.length-1), py(final), 3, 0, Math.PI*2);
+  ctx.fillStyle = color; ctx.fill();
+
+  // Value label
+  ctx.fillStyle = color; ctx.font = 'bold 10px monospace'; ctx.textAlign = 'right';
+  ctx.fillText((final > 0 ? '+' : '') + final, W - pad + 2, py(final) + (final >= 0 ? -5 : 13));
+}
+window.addEventListener('resize', drawEquityCurve);
 
 loadTracker();
 </script>
