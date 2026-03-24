@@ -480,11 +480,24 @@ function avg(a){return a.reduce((s,x)=>s+x,0)/a.length;}
 function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
 
 async function fetchCandles(){
-  try{
-    const r=await fetch('https://v3-production-1fb6.up.railway.app/candles',{signal:AbortSignal.timeout(8000)});
-    if(!r.ok) throw new Error('HTTP '+r.status);
-    return (await r.json()).map(c=>({open:+c[1],high:+c[2],low:+c[3],close:+c[4],volume:+c[5]}));
-  }catch(e){ console.error('[ENGINE] candle fetch failed:',e.message); return null; }
+  // Try Railway proxy first (avoids CORS), then fall back to Binance direct
+  const urls = [
+    'https://v3-production-1fb6.up.railway.app/candles',
+    'https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1m&limit=30',
+    'https://api.binance.us/api/v3/klines?symbol=BTCUSD&interval=1m&limit=30',
+  ];
+  for(const url of urls){
+    try{
+      console.log('[ENGINE] trying candles from',url);
+      const r=await fetch(url,{signal:AbortSignal.timeout(10000)});
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      const data=await r.json();
+      if(!Array.isArray(data)||!data.length) throw new Error('empty response');
+      return data.map(c=>({open:+c[1],high:+c[2],low:+c[3],close:+c[4],volume:+c[5]}));
+    }catch(e){ console.warn('[ENGINE] candle source failed:',url,e.message); }
+  }
+  console.error('[ENGINE] all candle sources failed');
+  return null;
 }
 
 async function runEngine(){
@@ -500,7 +513,11 @@ async function runEngine(){
 
   document.getElementById('eng-msg').textContent='Fetching candle data...';
   const candles=await fetchCandles();
-  if(!candles){ document.getElementById('eng-msg').textContent='Candle fetch failed, retrying...'; setTimeout(runEngine,8000); return; }
+  if(!candles){ 
+    document.getElementById('eng-msg').textContent='Retrying candle fetch in 10s...'; 
+    setTimeout(runEngine,10000); 
+    return; 
+  }
 
   const cp=btcPrice, sp=currentMarket.startPrice, yp=latestOdds.yes, np=latestOdds.no;
   const elapsed=300-secsLeft;
