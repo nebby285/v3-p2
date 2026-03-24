@@ -345,19 +345,15 @@ connect();
 async function loadTracker(){
   try{const r=await fetch(API+'/tracker',{signal:AbortSignal.timeout(5000)});if(r.ok){tracker=await r.json();renderTracker();setTimeout(drawEquityCurve,300);}}catch(e){}
 }
-async function saveTracker(){
-  try{await fetch(API+'/tracker',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(tracker)});}catch(e){}
-}
 function resolveDecision(){
   if(!lockedDecision||lockedDecision.resolved)return;
-  const{decision,startPrice}=lockedDecision; let result='SKIP';
-  if(decision!=='NO TRADE'&&btcPrice&&startPrice){
-    const won=(decision==='BUY UP'&&btcPrice>=startPrice)||(decision==='BUY DOWN'&&btcPrice<startPrice);
-    result=won?'WIN':'LOSS'; if(won)tracker.wins++;else tracker.losses++;
-  } else if(decision==='NO TRADE'){tracker.skips++;result='SKIP';}
-  const idx=tracker.history.findIndex(h=>h.window===lockedDecision.wts);
-  if(idx>=0)tracker.history[idx].result=result;
-  lockedDecision.resolved=true; saveTracker(); renderTracker();
+  lockedDecision.resolved=true;
+  // Tell server to resolve — server does the math and broadcasts to all devices
+  fetch(API+'/resolve',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({wts:lockedDecision.wts,decision:lockedDecision.decision,startPrice:lockedDecision.startPrice,btcPrice})
+  }).catch(()=>{});
 }
 function renderTracker(){
   const w=tracker.wins||0,l=tracker.losses||0,s=tracker.skips||0,t=w+l;
@@ -369,7 +365,8 @@ function renderTracker(){
   drawEquityCurve();
   const list=document.getElementById('tracker-list'),history=tracker.history||[];
   if(!history.length){list.innerHTML='<div class="th-empty">No decisions yet</div>';return;}
-  list.innerHTML=[...history].reverse().slice(0,10).map(h=>{
+  // Only show last 4
+  list.innerHTML=[...history].reverse().slice(0,4).map(h=>{
     const pc=h.decision==='BUY UP'?'up':h.decision==='BUY DOWN'?'down':'skip';
     const pt=h.decision==='BUY UP'?'↑ UP':h.decision==='BUY DOWN'?'↓ DOWN':'— SKIP';
     const rc=h.result==='WIN'?'win':h.result==='LOSS'?'loss':h.result==='PENDING'?'pending':'skip';
