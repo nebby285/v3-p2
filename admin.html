@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PolyPing Admin</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -19,228 +19,249 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 
 /* LOGIN */
 #login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
-.login-card{background:var(--c1);border:1px solid var(--border);border-radius:16px;padding:32px;width:100%;max-width:360px;text-align:center}
-.login-icon{width:48px;height:48px;background:#f7931a;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#fff;font-family:'JetBrains Mono',monospace;margin:0 auto 16px}
-.login-title{font-size:20px;font-weight:800;letter-spacing:-.5px;margin-bottom:6px}
-.login-sub{font-size:12px;color:var(--sub);margin-bottom:24px;font-family:'JetBrains Mono',monospace}
-.login-input{width:100%;background:var(--c2);border:1px solid var(--border2);border-radius:8px;padding:11px 14px;font-size:14px;color:var(--text);font-family:'JetBrains Mono',monospace;outline:none;margin-bottom:12px;transition:border-color .2s}
+.login-card{background:var(--c1);border:1px solid var(--border);border-radius:16px;padding:32px;width:100%;max-width:340px;text-align:center}
+.login-icon{width:44px;height:44px;background:#f7931a;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#fff;font-family:'JetBrains Mono',monospace;margin:0 auto 14px}
+.login-title{font-size:18px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px}
+.login-sub{font-size:11px;color:var(--sub);margin-bottom:22px;font-family:'JetBrains Mono',monospace}
+.login-input{width:100%;background:var(--c2);border:1px solid var(--border2);border-radius:8px;padding:10px 13px;font-size:14px;color:var(--text);font-family:'JetBrains Mono',monospace;outline:none;margin-bottom:10px;transition:border-color .2s}
 .login-input:focus{border-color:var(--blue)}
-.login-btn{width:100%;background:var(--blue);border:none;border-radius:8px;padding:11px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;font-family:'JetBrains Mono',monospace;transition:opacity .2s}
+.login-btn{width:100%;background:var(--blue);border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;font-family:'JetBrains Mono',monospace}
 .login-btn:hover{opacity:.85}
 .login-err{font-size:11px;color:var(--red);font-family:'JetBrains Mono',monospace;margin-top:8px;display:none}
 
-/* ADMIN DASHBOARD */
-#admin-screen{display:none;padding:0 0 60px}
-.topbar{position:sticky;top:0;z-index:99;background:rgba(7,7,11,.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between}
-.tb-l{display:flex;align-items:center;gap:10px}
-.tb-icon{width:26px;height:26px;background:#f7931a;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#fff;font-family:'JetBrains Mono',monospace}
-.tb-name{font-size:14px;font-weight:800;letter-spacing:-.5px}
-.tb-badge{font-size:9px;font-weight:700;font-family:'JetBrains Mono',monospace;padding:2px 8px;border-radius:20px;background:rgba(170,119,255,.1);border:1px solid rgba(170,119,255,.25);color:var(--purple);margin-left:4px}
-.tb-r{display:flex;align-items:center;gap:10px}
+/* ADMIN */
+#admin-screen{display:none}
+.topbar{background:var(--c1);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.tb-l{display:flex;align-items:center;gap:9px}
+.tb-icon{width:24px;height:24px;background:#f7931a;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff;font-family:'JetBrains Mono',monospace}
+.tb-name{font-size:13px;font-weight:800;letter-spacing:-.4px}
+.tb-badge{font-size:9px;font-weight:700;font-family:'JetBrains Mono',monospace;padding:2px 8px;border-radius:20px;background:rgba(170,119,255,.1);border:1px solid rgba(170,119,255,.25);color:var(--purple)}
+.tb-r{display:flex;align-items:center;gap:8px}
 .tb-clock{font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace}
-.logout-btn{font-size:9px;font-weight:700;font-family:'JetBrains Mono',monospace;padding:3px 10px;border-radius:20px;border:1px solid var(--border2);color:var(--muted);background:transparent;cursor:pointer}
-.logout-btn:hover{color:var(--red);border-color:var(--rb)}
+.tb-btn{font-size:9px;font-weight:700;font-family:'JetBrains Mono',monospace;padding:3px 10px;border-radius:20px;border:1px solid var(--border2);color:var(--muted);background:transparent;cursor:pointer;text-decoration:none;display:inline-block}
+.tb-btn:hover{color:var(--green);border-color:var(--gb)}
+.tb-btn.out:hover{color:var(--red);border-color:var(--rb)}
 
-.page{max-width:1100px;margin:0 auto;padding:0 20px}
-.sec{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;padding:16px 0 8px;font-family:'JetBrains Mono',monospace}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
-.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px}
-.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px}
+/* HERO BAR */
+.hero-bar{display:grid;grid-template-columns:repeat(4,1fr);background:var(--border);gap:1px;border-bottom:1px solid var(--border)}
+.hb-cell{background:var(--c1);padding:14px 18px}
+.hb-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace;margin-bottom:5px}
+.hb-val{font-size:26px;font-weight:800;font-family:'JetBrains Mono',monospace;letter-spacing:-1.5px;line-height:1}
+.hb-sub{font-size:9px;color:var(--sub);font-family:'JetBrains Mono',monospace;margin-top:3px}
+.hv-b{color:var(--blue)}.hv-g{color:var(--green)}.hv-a{color:var(--amber)}.hv-p{color:var(--purple)}
 
-/* STAT CARDS */
-.stat{background:var(--c1);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px}
-.stat-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace;margin-bottom:6px}
-.stat-val{font-size:28px;font-weight:800;font-family:'JetBrains Mono',monospace;letter-spacing:-1.5px;line-height:1}
-.stat-sub{font-size:10px;color:var(--sub);font-family:'JetBrains Mono',monospace;margin-top:4px}
-.sv-green{color:var(--green)}.sv-red{color:var(--red)}.sv-amber{color:var(--amber)}.sv-purple{color:var(--purple)}.sv-blue{color:var(--blue)}
+/* BODY */
+.page{display:grid;grid-template-columns:1fr 1fr;max-width:100%}
+.col{border-right:1px solid var(--border);padding-bottom:40px}
+.col:last-child{border-right:none}
+.sec-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;padding:13px 18px 7px;font-family:'JetBrains Mono',monospace}
 
-/* CARDS */
-.card{background:var(--c1);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:10px}
-.card-head{padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--c2)}
-.card-title{font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.05em}
-.card-action{font-size:9px;font-weight:700;font-family:'JetBrains Mono',monospace;padding:3px 10px;border-radius:6px;border:1px solid var(--border2);color:var(--sub);background:transparent;cursor:pointer;transition:all .2s}
-.card-action:hover{border-color:var(--red);color:var(--red)}
+/* PAPER CARD */
+.paper-bal{padding:18px;text-align:center;border-bottom:1px solid var(--border);background:var(--c2)}
+.pb-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-family:'JetBrains Mono',monospace;margin-bottom:5px}
+.pb-val{font-size:38px;font-weight:900;font-family:'JetBrains Mono',monospace;letter-spacing:-2px;line-height:1}
+.pb-sub{font-size:11px;font-family:'JetBrains Mono',monospace;margin-top:5px}
+.p-stats{display:grid;grid-template-columns:1fr 1fr 1fr;background:var(--border);gap:1px;border-bottom:1px solid var(--border);border-top:1px solid var(--border)}
+.ps-c{background:var(--c1);padding:10px;text-align:center}
+.ps-l{font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-family:'JetBrains Mono',monospace;margin-bottom:3px}
+.ps-v{font-size:16px;font-weight:700;font-family:'JetBrains Mono',monospace}
 
-/* PAPER TRADING */
-.paper-balance{padding:20px 16px;text-align:center;border-bottom:1px solid var(--border)}
-.pb-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-family:'JetBrains Mono',monospace;margin-bottom:6px}
-.pb-val{font-size:40px;font-weight:800;font-family:'JetBrains Mono',monospace;letter-spacing:-2px;line-height:1}
-.pb-sub{font-size:12px;font-family:'JetBrains Mono',monospace;margin-top:6px}
-.bet-row{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--c2)}
-.bet-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace;flex-shrink:0}
-.bet-input{background:var(--c1);border:1px solid var(--border2);border-radius:6px;padding:5px 10px;font-size:13px;font-weight:700;color:var(--text);font-family:'JetBrains Mono',monospace;width:80px;outline:none}
-.bet-input:focus{border-color:var(--blue)}
-.bet-btn{font-size:9px;font-weight:700;font-family:'JetBrains Mono',monospace;padding:5px 12px;border-radius:6px;border:1px solid var(--gb);color:var(--green);background:var(--gd);cursor:pointer;transition:opacity .2s}
-.bet-btn:hover{opacity:.8}
-.paper-stats{display:grid;grid-template-columns:repeat(3,1fr);background:var(--border);gap:1px;border-bottom:1px solid var(--border)}
-.ps-cell{background:var(--c1);padding:12px 14px;text-align:center}
-.ps-lbl{font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:'JetBrains Mono',monospace;margin-bottom:4px}
-.ps-val{font-size:18px;font-weight:700;font-family:'JetBrains Mono',monospace}
+/* BET ROW */
+.bet-row{padding:10px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;background:var(--c2)}
+.bet-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;font-family:'JetBrains Mono',monospace;flex-shrink:0}
+.bet-in{background:var(--c1);border:1px solid var(--border2);border-radius:6px;padding:4px 9px;font-size:12px;font-weight:700;color:var(--text);font-family:'JetBrains Mono',monospace;width:65px;outline:none}
+.bet-in:focus{border-color:var(--blue)}
+.action-btn{font-size:9px;font-weight:700;font-family:'JetBrains Mono',monospace;padding:5px 11px;border-radius:6px;cursor:pointer;transition:opacity .2s}
+.action-btn:hover{opacity:.8}
+.btn-green{border:1px solid var(--gb);color:var(--green);background:var(--gd)}
+.btn-red{border:1px solid var(--rb);color:var(--red);background:var(--rd);margin-left:auto}
 
 /* TRADES TABLE */
-.trades-wrap{padding:0}
-.trade-row{display:flex;align-items:center;gap:0;padding:8px 16px;border-bottom:1px solid var(--border);font-size:11px;transition:background .1s}
-.trade-row:hover{background:var(--c2)}
-.trade-row:last-child{border-bottom:none}
-.tr-time{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);min-width:68px}
-.tr-dec{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;min-width:90px}
-.tr-dec.up{color:var(--green)}.tr-dec.dn{color:var(--red)}
-.tr-price{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--sub);min-width:55px}
-.tr-bet{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;min-width:55px;color:var(--text)}
-.tr-payout{font-family:'JetBrains Mono',monospace;font-size:10px;min-width:65px;color:var(--sub)}
-.tr-pnl{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;min-width:60px;text-align:right;flex:1}
-.tr-pnl.pos{color:var(--green)}.tr-pnl.neg{color:var(--red)}
-.tr-badge{font-size:8px;font-weight:700;font-family:'JetBrains Mono',monospace;padding:2px 7px;border-radius:3px;min-width:55px;text-align:center}
-.rb-w{background:var(--gd);color:var(--green);border:1px solid var(--gb)}
-.rb-l{background:var(--rd);color:var(--red);border:1px solid var(--rb)}
-.rb-p{background:rgba(255,187,0,.08);color:var(--amber);border:1px solid rgba(255,187,0,.2)}
+.table-head{display:flex;padding:6px 18px;background:var(--c2);border-bottom:1px solid var(--border)}
+.th-c{font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:monospace}
+.tr-row{display:flex;align-items:center;padding:7px 18px;border-bottom:1px solid #111118;transition:background .1s}
+.tr-row:hover{background:var(--c2)}
+.tc-time{font-size:9px;color:var(--muted);font-family:monospace;min-width:62px}
+.tc-dec{font-size:10px;font-weight:700;font-family:monospace;min-width:82px}
+.tc-up{color:var(--green)}.tc-dn{color:var(--red)}
+.tc-tok{font-size:9px;color:var(--sub);font-family:monospace;min-width:38px}
+.tc-bet{font-size:10px;font-weight:700;font-family:monospace;min-width:42px}
+.tc-pay{font-size:9px;color:var(--sub);font-family:monospace;flex:1}
+.tc-pnl{font-size:10px;font-weight:700;font-family:monospace;min-width:52px;text-align:right}
+.pnl-p{color:var(--green)}.pnl-n{color:var(--red)}
+.tc-badge{font-size:8px;font-weight:700;font-family:monospace;padding:2px 6px;border-radius:3px;margin-left:8px;min-width:36px;text-align:center}
+.tb-w{background:var(--gd);color:var(--green);border:1px solid var(--gb)}
+.tb-l{background:var(--rd);color:var(--red);border:1px solid var(--rb)}
+.tb-p{background:rgba(255,187,0,.08);color:var(--amber);border:1px solid rgba(255,187,0,.2)}
 
-/* SIGNAL TABLE */
-.sig-row{display:flex;align-items:center;padding:7px 16px;border-bottom:1px solid var(--border);gap:8px}
-.sig-row:last-child{border-bottom:none}
-.sr-time{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);min-width:68px}
-.sr-dec{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;min-width:80px}
-.sr-dec.up{color:var(--green)}.sr-dec.dn{color:var(--red)}
-.sr-conf{font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--sub);min-width:50px}
-.sr-badge{font-size:8px;font-weight:700;font-family:'JetBrains Mono',monospace;padding:2px 7px;border-radius:3px}
+/* EXPAND BUTTON */
+.expand-btn{width:100%;padding:10px;background:var(--c2);border:none;border-top:1px solid var(--border);color:var(--sub);font-size:9px;font-weight:700;font-family:monospace;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:color .2s}
+.expand-btn:hover{color:var(--text)}
+.expand-arrow{transition:transform .2s}
+.expand-arrow.open{transform:rotate(180deg)}
 
 /* LIVE STATUS */
-.live-row{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border)}
-.live-row:last-child{border-bottom:none}
-.lr-lbl{font-size:10px;color:var(--sub);font-family:'JetBrains Mono',monospace}
-.lr-val{font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace}
-.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 1.4s infinite;display:inline-block;margin-right:6px}
+.ls-row{display:flex;align-items:center;justify-content:space-between;padding:9px 18px;border-bottom:1px solid #111118}
+.ls-lbl{font-size:10px;color:var(--sub);font-family:monospace}
+.ls-val{font-size:11px;font-weight:700;font-family:monospace}
+.live-dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:blink 1.4s infinite;display:inline-block;margin-right:5px}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
 
-.empty{text-align:center;padding:20px;font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+/* SIG HISTORY */
+.sh-row{display:flex;align-items:center;padding:7px 18px;border-bottom:1px solid #111118}
+.shr-t{font-size:9px;color:var(--muted);font-family:monospace;min-width:65px}
+.shr-d{font-size:10px;font-weight:700;font-family:monospace;min-width:82px}
+.shr-du{color:var(--green)}.shr-dd{color:var(--red)}
+.shr-c{font-size:9px;color:var(--sub);font-family:monospace;flex:1}
+.shr-b{font-size:8px;font-weight:700;font-family:monospace;padding:2px 6px;border-radius:3px}
+.sb-w{background:var(--gd);color:var(--green);border:1px solid var(--gb)}
+.sb-l{background:var(--rd);color:var(--red);border:1px solid var(--rb)}
+.sb-p{background:rgba(255,187,0,.08);color:var(--amber);border:1px solid rgba(255,187,0,.2)}
+.sb-s{background:rgba(60,60,86,.1);color:var(--muted);border:1px solid var(--border2)}
+
+/* RESET MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:var(--c1);border:1px solid var(--border2);border-radius:16px;padding:24px;width:100%;max-width:320px}
+.modal-title{font-size:16px;font-weight:800;margin-bottom:6px;letter-spacing:-.4px}
+.modal-sub{font-size:11px;color:var(--sub);font-family:monospace;margin-bottom:18px}
+.modal-row{margin-bottom:12px}
+.modal-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:monospace;margin-bottom:5px}
+.modal-input{width:100%;background:var(--c2);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;font-size:14px;font-weight:700;color:var(--text);font-family:monospace;outline:none}
+.modal-input:focus{border-color:var(--blue)}
+.modal-btns{display:flex;gap:8px;margin-top:16px}
+.modal-cancel{flex:1;padding:9px;border-radius:8px;border:1px solid var(--border2);color:var(--sub);background:transparent;cursor:pointer;font-size:12px;font-weight:700;font-family:monospace}
+.modal-confirm{flex:1;padding:9px;border-radius:8px;border:none;background:var(--red);color:#fff;cursor:pointer;font-size:12px;font-weight:700;font-family:monospace}
+.modal-confirm:hover{opacity:.85}
+
+.empty{text-align:center;padding:20px;font-size:10px;color:var(--muted);font-family:monospace}
 </style>
 </head>
 <body>
+
+<!-- RESET MODAL -->
+<div class="modal-overlay" id="reset-modal">
+  <div class="modal">
+    <div class="modal-title">Reset Paper Trading</div>
+    <div class="modal-sub">This will wipe all trade history and restart the balance.</div>
+    <div class="modal-row">
+      <div class="modal-lbl">Starting Balance ($)</div>
+      <input class="modal-input" type="number" id="modal-balance" value="100" min="1"/>
+    </div>
+    <div class="modal-row">
+      <div class="modal-lbl">Bet Size per Trade ($)</div>
+      <input class="modal-input" type="number" id="modal-betsize" value="10" min="1"/>
+    </div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+      <button class="modal-confirm" onclick="confirmReset()">Reset</button>
+    </div>
+  </div>
+</div>
 
 <!-- LOGIN -->
 <div id="login-screen">
   <div class="login-card">
     <div class="login-icon">₿</div>
     <div class="login-title">PolyPing Admin</div>
-    <div class="login-sub">Enter your admin password to continue</div>
-    <input type="password" class="login-input" id="pw-input" placeholder="Password" />
+    <div class="login-sub">Enter password to continue</div>
+    <input type="password" class="login-input" id="pw-input" placeholder="Password"/>
     <button class="login-btn" onclick="login()">Sign In</button>
     <div class="login-err" id="login-err">Wrong password. Try again.</div>
   </div>
 </div>
 
-<!-- ADMIN DASHBOARD -->
+<!-- ADMIN -->
 <div id="admin-screen">
   <div class="topbar">
     <div class="tb-l">
       <div class="tb-icon">₿</div>
-      <div style="font-size:14px;font-weight:800;letter-spacing:-.5px">PolyPing</div>
+      <div class="tb-name">PolyPing</div>
       <div class="tb-badge">ADMIN</div>
     </div>
     <div class="tb-r">
-      <a href="/" style="font-size:9px;font-weight:700;font-family:'JetBrains Mono',monospace;padding:3px 10px;border-radius:20px;border:1px solid var(--border2);color:var(--muted);text-decoration:none;transition:all .2s" onmouseover="this.style.color='var(--green)';this.style.borderColor='var(--gb)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border2)'">← MAIN SITE</a>
-      <div class="tb-clock" id="admin-clock">--:--:-- UTC</div>
-      <button class="logout-btn" onclick="logout()">Sign Out</button>
+      <a href="/" class="tb-btn">← Main Site</a>
+      <span class="tb-clock" id="admin-clock">--:--:-- UTC</span>
+      <button class="tb-btn out" onclick="logout()">Sign Out</button>
     </div>
   </div>
 
-  <div class="page">
-    <div class="sec">Live Overview</div>
-    <div class="grid4">
-      <div class="stat">
-        <div class="stat-lbl">Live Users</div>
-        <div class="stat-val sv-blue" id="a-users">—</div>
-        <div class="stat-sub">WebSocket connections</div>
-      </div>
-      <div class="stat">
-        <div class="stat-lbl">BTC Price</div>
-        <div class="stat-val" id="a-btc">—</div>
-        <div class="stat-sub" id="a-window">—</div>
-      </div>
-      <div class="stat">
-        <div class="stat-lbl">Current Signal</div>
-        <div class="stat-val" id="a-signal">—</div>
-        <div class="stat-sub" id="a-conf">—</div>
-      </div>
-      <div class="stat">
-        <div class="stat-lbl">Win Rate</div>
-        <div class="stat-val sv-amber" id="a-winrate">—</div>
-        <div class="stat-sub" id="a-wl">—</div>
-      </div>
-    </div>
+  <div class="hero-bar">
+    <div class="hb-cell"><div class="hb-lbl">Live Users</div><div class="hb-val hv-b" id="h-users">—</div><div class="hb-sub">WebSocket connections</div></div>
+    <div class="hb-cell"><div class="hb-lbl">Paper Balance</div><div class="hb-val hv-g" id="h-balance">—</div><div class="hb-sub" id="h-roi">—</div></div>
+    <div class="hb-cell"><div class="hb-lbl">Win Rate</div><div class="hb-val hv-a" id="h-winrate">—</div><div class="hb-sub" id="h-wl">—</div></div>
+    <div class="hb-cell"><div class="hb-lbl">Current Signal</div><div class="hb-val hv-p" id="h-signal" style="font-size:18px">—</div><div class="hb-sub" id="h-conf">—</div></div>
+  </div>
 
-    <div class="sec">Paper Trading — $100 Start</div>
-    <div class="grid2">
-      <div class="card">
-        <div class="card-head">
-          <div class="card-title">Portfolio</div>
-          <button class="card-action" onclick="resetPaper()">Reset to $100</button>
-        </div>
-        <div class="paper-balance">
+  <div class="page">
+    <div class="col">
+      <div class="sec-lbl">Paper Trading</div>
+      <div>
+        <div class="paper-bal">
           <div class="pb-lbl">Current Balance</div>
-          <div class="pb-val" id="p-balance">$100.00</div>
-          <div class="pb-sub" id="p-roi" style="color:var(--sub)">—</div>
+          <div class="pb-val" id="p-bal">—</div>
+          <div class="pb-sub" id="p-roi-sub">—</div>
+        </div>
+        <div class="p-stats">
+          <div class="ps-c"><div class="ps-l">Invested</div><div class="ps-v" id="p-inv">—</div></div>
+          <div class="ps-c"><div class="ps-l">Returned</div><div class="ps-v" style="color:var(--green)" id="p-ret">—</div></div>
+          <div class="ps-c"><div class="ps-l">Net P&L</div><div class="ps-v" id="p-pnl">—</div></div>
         </div>
         <div class="bet-row">
-          <div class="bet-lbl">Bet per trade</div>
-          <input class="bet-input" type="number" id="bet-size" value="10" min="1" max="100" />
-          <button class="bet-btn" onclick="updateBetSize()">Set</button>
-          <div style="font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-left:auto" id="bet-hint">Auto-trades each signal</div>
+          <div class="bet-lbl">Bet size</div>
+          <input class="bet-in" type="number" id="bet-size" value="10" min="1"/>
+          <button class="action-btn btn-green" onclick="updateBetSize()">Set</button>
+          <button class="action-btn btn-red" onclick="openModal()">Reset</button>
         </div>
-        <div class="paper-stats">
-          <div class="ps-cell"><div class="ps-lbl">Invested</div><div class="ps-val" id="p-invested">$0</div></div>
-          <div class="ps-cell"><div class="ps-lbl">Returned</div><div class="ps-val sv-green" id="p-returned">$0</div></div>
-          <div class="ps-cell"><div class="ps-lbl">Net P&L</div><div class="ps-val" id="p-pnl">$0</div></div>
+        <div class="table-head">
+          <div class="th-c" style="min-width:62px">Time</div>
+          <div class="th-c" style="min-width:82px">Decision</div>
+          <div class="th-c" style="min-width:38px">Token</div>
+          <div class="th-c" style="min-width:42px">Bet</div>
+          <div class="th-c" style="flex:1">Payout</div>
+          <div class="th-c" style="min-width:52px;text-align:right">P&L</div>
+          <div class="th-c" style="min-width:44px;margin-left:8px;text-align:center">Result</div>
         </div>
-      </div>
-
-      <div class="card">
-        <div class="card-head"><div class="card-title">Live Status</div></div>
-        <div class="live-row"><div class="lr-lbl"><span class="live-dot"></span>Server</div><div class="lr-val sv-green">Online</div></div>
-        <div class="live-row"><div class="lr-lbl">Market</div><div class="lr-val" id="ls-market">—</div></div>
-        <div class="live-row"><div class="lr-lbl">Price to Beat</div><div class="lr-val" id="ls-ptb">—</div></div>
-        <div class="live-row"><div class="lr-lbl">YES odds</div><div class="lr-val sv-green" id="ls-yes">—</div></div>
-        <div class="live-row"><div class="lr-lbl">NO odds</div><div class="lr-val sv-red" id="ls-no">—</div></div>
-        <div class="live-row"><div class="lr-lbl">Window closes</div><div class="lr-val sv-amber" id="ls-closes">—</div></div>
-        <div class="live-row"><div class="lr-lbl">Locked decision</div><div class="lr-val" id="ls-decision">—</div></div>
+        <div id="trades-preview"></div>
+        <button class="expand-btn" id="trades-expand-btn" onclick="toggleTrades()" style="display:none">
+          <span id="trades-expand-txt">Show all trades</span>
+          <span class="expand-arrow" id="trades-arrow">▼</span>
+        </button>
+        <div id="trades-extra" style="display:none"></div>
       </div>
     </div>
 
-    <div class="sec">Paper Trade History</div>
-    <div class="card">
-      <div class="card-head">
-        <div class="card-title">All Trades</div>
-        <div style="font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace" id="trades-summary">—</div>
+    <div class="col">
+      <div class="sec-lbl">Live Status</div>
+      <div>
+        <div class="ls-row"><div class="ls-lbl"><span class="live-dot"></span>Server</div><div class="ls-val" style="color:var(--green)">Online</div></div>
+        <div class="ls-row"><div class="ls-lbl">BTC Price</div><div class="ls-val" id="ls-btc">—</div></div>
+        <div class="ls-row"><div class="ls-lbl">Market</div><div class="ls-val" id="ls-market" style="font-size:9px">—</div></div>
+        <div class="ls-row"><div class="ls-lbl">Price to Beat</div><div class="ls-val" id="ls-ptb">—</div></div>
+        <div class="ls-row"><div class="ls-lbl">YES odds</div><div class="ls-val" style="color:var(--green)" id="ls-yes">—</div></div>
+        <div class="ls-row"><div class="ls-lbl">NO odds</div><div class="ls-val" style="color:var(--red)" id="ls-no">—</div></div>
+        <div class="ls-row"><div class="ls-lbl">Window closes</div><div class="ls-val" style="color:var(--amber)" id="ls-closes">—</div></div>
+        <div class="ls-row"><div class="ls-lbl">Locked decision</div><div class="ls-val" id="ls-dec">—</div></div>
       </div>
-      <div style="display:flex;padding:7px 16px;border-bottom:1px solid var(--border);background:var(--c2)">
-        <div style="font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:monospace;min-width:68px">Time</div>
-        <div style="font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:monospace;min-width:90px">Decision</div>
-        <div style="font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:monospace;min-width:55px">Token</div>
-        <div style="font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:monospace;min-width:55px">Bet</div>
-        <div style="font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:monospace;min-width:65px">Payout (x)</div>
-        <div style="font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:monospace;flex:1;text-align:right">P&L</div>
-        <div style="font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:monospace;min-width:55px;text-align:center;margin-left:8px">Result</div>
-      </div>
-      <div id="trades-list"><div class="empty">No paper trades yet — waiting for next signal...</div></div>
-    </div>
 
-    <div class="sec">Signal History</div>
-    <div class="card">
-      <div class="card-head"><div class="card-title">Recent Decisions</div></div>
-      <div id="sig-list"><div class="empty">Loading...</div></div>
+      <div class="sec-lbl">Signal History</div>
+      <div id="sig-preview"></div>
+      <button class="expand-btn" id="sig-expand-btn" onclick="toggleSig()" style="display:none">
+        <span id="sig-expand-txt">Show all decisions</span>
+        <span class="expand-arrow" id="sig-arrow">▼</span>
+      </button>
+      <div id="sig-extra" style="display:none"></div>
     </div>
   </div>
 </div>
 
 <script>
-const API = 'https://v3-production-1fb6.up.railway.app';
-let adminToken = null;
-let pollTimer = null;
+const API='https://v3-production-1fb6.up.railway.app';
+let adminToken=null,pollTimer=null;
+let allTrades=[],allSig=[],tradesOpen=false,sigOpen=false;
 
-// Clock
 setInterval(()=>{
-  const n=new Date();
-  const el=document.getElementById('admin-clock');
+  const n=new Date(),el=document.getElementById('admin-clock');
   if(el)el.textContent=[n.getUTCHours(),n.getUTCMinutes(),n.getUTCSeconds()].map(v=>String(v).padStart(2,'0')).join(':')+' UTC';
 },1000);
 
@@ -252,158 +273,162 @@ async function login(){
   try{
     const r=await fetch(API+'/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})});
     const d=await r.json();
-    if(d.ok){
-      adminToken=d.token;
-      sessionStorage.setItem('adminToken',adminToken);
-      document.getElementById('login-screen').style.display='none';
-      document.getElementById('admin-screen').style.display='block';
-      startPolling();
-    } else {
-      document.getElementById('login-err').style.display='block';
-    }
+    if(d.ok){adminToken=d.token;sessionStorage.setItem('adminToken',adminToken);showAdmin();}
+    else document.getElementById('login-err').style.display='block';
   }catch(e){document.getElementById('login-err').style.display='block';}
 }
-
-function logout(){
-  sessionStorage.removeItem('adminToken');
-  adminToken=null;
-  clearInterval(pollTimer);
-  document.getElementById('login-screen').style.display='flex';
-  document.getElementById('admin-screen').style.display='none';
-}
-
-document.getElementById('pw-input').addEventListener('keydown',e=>{if(e.key==='Enter')login();});
-
-// Check for saved session
-const saved=sessionStorage.getItem('adminToken');
-if(saved){
-  adminToken=saved;
+function showAdmin(){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('admin-screen').style.display='block';
   startPolling();
 }
-
-async function fetchStats(){
-  try{
-    const r=await fetch(API+'/admin/stats',{headers:{'x-admin-token':adminToken}});
-    if(r.status===401){logout();return;}
-    const d=await r.json();
-    renderStats(d);
-  }catch(e){console.error('poll failed',e);}
+function logout(){
+  sessionStorage.removeItem('adminToken');adminToken=null;clearInterval(pollTimer);
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('admin-screen').style.display='none';
 }
+document.getElementById('pw-input').addEventListener('keydown',e=>{if(e.key==='Enter')login();});
+const saved=sessionStorage.getItem('adminToken');
+if(saved){adminToken=saved;showAdmin();}
 
-function startPolling(){
-  fetchStats();
-  pollTimer=setInterval(fetchStats,3000);
+function openModal(){
+  document.getElementById('modal-balance').value=100;
+  document.getElementById('modal-betsize').value=document.getElementById('bet-size').value||10;
+  document.getElementById('reset-modal').classList.add('show');
 }
-
-function renderStats(d){
-  // Overview
-  document.getElementById('a-users').textContent=d.liveUsers||0;
-  document.getElementById('a-btc').textContent=d.btcPrice?'$'+fmt(d.btcPrice):'—';
-  const market=d.market;
-  if(market){
-    const fh=ts=>new Date(ts*1000).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'America/New_York'});
-    document.getElementById('a-window').textContent=fh(market.wts||0)+' – '+fh(market.endSec||0)+' ET';
-  }
-  const dec=d.decision;
-  if(dec){
-    const el=document.getElementById('a-signal');
-    el.textContent=dec.decision==='BUY UP'?'YES · UP':dec.decision==='BUY DOWN'?'NO · DOWN':'NO TRADE';
-    el.style.color=dec.decision==='BUY UP'?'var(--green)':dec.decision==='BUY DOWN'?'var(--red)':'var(--amber)';
-    document.getElementById('a-conf').textContent='Conf: '+Math.round((dec.conf||0)*100)+'% · Quality: '+Math.round((dec.quality||0)*100)+'%';
-  }
-  const sig=d.signal;
-  document.getElementById('a-winrate').textContent=sig.winRate+'%';
-  document.getElementById('a-wl').textContent=`${sig.wins}W ${sig.losses}L ${sig.skips}S`;
-
-  // Live status
-  document.getElementById('ls-market').textContent=market?market.slug:'—';
-  document.getElementById('ls-ptb').textContent=market?.startPrice?'$'+fmt(market.startPrice):'—';
-  document.getElementById('ls-yes').textContent=d.odds?'¢'+Math.round(d.odds.yes*100):'—';
-  document.getElementById('ls-no').textContent=d.odds?'¢'+Math.round(d.odds.no*100):'—';
-  if(market){
-    const sl=Math.max(0,market.endSec-Math.floor(Date.now()/1000));
-    document.getElementById('ls-closes').textContent=fmtT(sl);
-  }
-  const decEl=document.getElementById('ls-decision');
-  if(dec){decEl.textContent=dec.decision;decEl.style.color=dec.decision==='BUY UP'?'var(--green)':dec.decision==='BUY DOWN'?'var(--red)':'var(--amber)';}
-
-  // Paper trading
-  const p=d.paper;
-  const bal=p.balance;
-  const net=bal-p.startBalance;
-  const roiPct=((net/p.startBalance)*100).toFixed(2);
-  document.getElementById('p-balance').textContent='$'+fmt(bal);
-  document.getElementById('p-balance').style.color=bal>=p.startBalance?'var(--green)':'var(--red)';
-  document.getElementById('p-roi').textContent=(net>=0?'+$':'-$')+fmt(Math.abs(net))+' ('+roiPct+'% ROI)';
-  document.getElementById('p-roi').style.color=net>=0?'var(--green)':'var(--red)';
-  document.getElementById('p-invested').textContent='$'+fmt(p.totalInvested);
-  document.getElementById('p-returned').textContent='$'+fmt(p.totalReturned);
-  const pnl=p.totalReturned-p.totalInvested;
-  const pnlEl=document.getElementById('p-pnl');
-  pnlEl.textContent=(pnl>=0?'+$':'-$')+fmt(Math.abs(pnl));
-  pnlEl.style.color=pnl>=0?'var(--green)':'var(--red)';
-  document.getElementById('bet-size').value=p.betSize;
-
-  // Trades
-  const trades=p.trades||[];
-  const tw=trades.filter(t=>t.result==='WIN').length;
-  const tl=trades.filter(t=>t.result==='LOSS').length;
-  document.getElementById('trades-summary').textContent=trades.length>0?`${tw}W ${tl}L · ${trades.length} total`:'No trades yet';
-  const tlist=document.getElementById('trades-list');
-  if(!trades.length){tlist.innerHTML='<div class="empty">No paper trades yet — waiting for next signal...</div>';return;}
-  tlist.innerHTML=trades.slice(0,20).map(t=>{
-    const isUp=t.decision==='BUY UP';
-    const rc=t.result==='WIN'?'rb-w':t.result==='LOSS'?'rb-l':'rb-p';
-    const pnlClass=t.pnl>0?'pos':t.pnl<0?'neg':'';
-    const pnlTxt=t.result==='PENDING'?'pending':((t.pnl>=0?'+$':'-$')+fmt(Math.abs(t.pnl)));
-    return`<div class="trade-row">
-      <div class="tr-time">${t.time}</div>
-      <div class="tr-dec ${isUp?'up':'dn'}">${isUp?'↑ YES · UP':'↓ NO · DOWN'}</div>
-      <div class="tr-price">¢${Math.round(t.tokenPrice*100)}</div>
-      <div class="tr-bet">$${fmt(t.betSize)}</div>
-      <div class="tr-payout">$${fmt(t.potentialPayout)} <span style="color:var(--muted);font-size:8px">(${(1/t.tokenPrice).toFixed(2)}x)</span></div>
-      <div class="tr-pnl ${pnlClass}">${pnlTxt}</div>
-      <div style="min-width:55px;text-align:center;margin-left:8px"><span class="tr-badge ${rc}">${t.result}</span></div>
-    </div>`;
-  }).join('');
-
-  // Signal history
-  const history=(d.signal?.history||[]).slice().reverse();
-  const slist=document.getElementById('sig-list');
-  if(!history.length){slist.innerHTML='<div class="empty">No signal history</div>';return;}
-
-  // Fetch from tracker
-  fetch(API+'/tracker').then(r=>r.json()).then(tr=>{
-    const h=[...tr.history].reverse();
-    slist.innerHTML=h.slice(0,15).map(entry=>{
-      const isUp=entry.decision==='BUY UP';
-      const rc=entry.result==='WIN'?'rb-w':entry.result==='LOSS'?'rb-l':entry.result==='PENDING'?'rb-p':'rb-s';
-      return`<div class="sig-row">
-        <div class="sr-time">${entry.time}</div>
-        <div class="sr-dec ${isUp?'up':'dn'}">${isUp?'↑ BUY UP':'↓ BUY DOWN'}</div>
-        <div class="sr-conf">${entry.conf!=null?'Conf: '+entry.conf+'%':'—'}</div>
-        <div style="flex:1"></div>
-        <span class="sr-badge ${rc}">${entry.result}</span>
-      </div>`;
-    }).join('');
-  }).catch(()=>{});
+function closeModal(){document.getElementById('reset-modal').classList.remove('show');}
+async function confirmReset(){
+  const bal=parseFloat(document.getElementById('modal-balance').value)||100;
+  const bet=parseFloat(document.getElementById('modal-betsize').value)||10;
+  await fetch(API+'/admin/paper/reset',{method:'POST',headers:{'Content-Type':'application/json','x-admin-token':adminToken},body:JSON.stringify({startBalance:bal,betSize:bet})});
+  closeModal();fetchStats();
 }
-
-async function resetPaper(){
-  if(!confirm('Reset paper trading to $100?')) return;
-  const startBal=parseFloat(prompt('Starting balance?','100'))||100;
-  const betSz=parseFloat(prompt('Bet size per trade?','10'))||10;
-  await fetch(API+'/admin/paper/reset',{method:'POST',headers:{'Content-Type':'application/json','x-admin-token':adminToken},body:JSON.stringify({startBalance:startBal,betSize:betSz})});
-  fetchStats();
-}
-
 async function updateBetSize(){
   const sz=parseFloat(document.getElementById('bet-size').value)||10;
   await fetch(API+'/admin/paper/betsize',{method:'POST',headers:{'Content-Type':'application/json','x-admin-token':adminToken},body:JSON.stringify({betSize:sz})});
   fetchStats();
 }
+
+function tradeHTML(t){
+  const isUp=t.decision==='BUY UP';
+  const rc=t.result==='WIN'?'tb-w':t.result==='LOSS'?'tb-l':'tb-p';
+  const res=t.result==='PENDING'?'PEND':t.result;
+  const pnlTxt=t.result==='PENDING'?'—':(t.pnl>=0?'+$':'-$')+fmt(Math.abs(t.pnl));
+  const pnlCls=t.result==='PENDING'?'':t.pnl>0?'pnl-p':'pnl-n';
+  return`<div class="tr-row">
+    <div class="tc-time">${t.time}</div>
+    <div class="tc-dec ${isUp?'tc-up':'tc-dn'}">${isUp?'↑ YES · UP':'↓ NO · DOWN'}</div>
+    <div class="tc-tok">¢${Math.round(t.tokenPrice*100)}</div>
+    <div class="tc-bet">$${fmt(t.betSize)}</div>
+    <div class="tc-pay">$${fmt(t.potentialPayout)} <span style="color:var(--muted);font-size:8px">(${(1/t.tokenPrice).toFixed(2)}x)</span></div>
+    <div class="tc-pnl ${pnlCls}">${pnlTxt}</div>
+    <span class="tc-badge ${rc}" style="margin-left:8px">${res}</span>
+  </div>`;
+}
+
+function sigHTML(h){
+  const isUp=h.decision==='BUY UP';
+  const rc=h.result==='WIN'?'sb-w':h.result==='LOSS'?'sb-l':h.result==='PENDING'?'sb-p':'sb-s';
+  return`<div class="sh-row">
+    <div class="shr-t">${h.time}</div>
+    <div class="shr-d ${isUp?'shr-du':'shr-dd'}">${isUp?'↑ BUY UP':'↓ BUY DOWN'}</div>
+    <div class="shr-c">${h.conf!=null?'Conf '+h.conf+'%':'—'}</div>
+    <span class="shr-b ${rc}">${h.result}</span>
+  </div>`;
+}
+
+function toggleTrades(){
+  tradesOpen=!tradesOpen;
+  document.getElementById('trades-extra').style.display=tradesOpen?'block':'none';
+  document.getElementById('trades-expand-txt').textContent=tradesOpen?'Show less':'Show all trades ('+allTrades.length+')';
+  document.getElementById('trades-arrow').className='expand-arrow'+(tradesOpen?' open':'');
+}
+function toggleSig(){
+  sigOpen=!sigOpen;
+  document.getElementById('sig-extra').style.display=sigOpen?'block':'none';
+  document.getElementById('sig-expand-txt').textContent=sigOpen?'Show less':'Show all decisions ('+allSig.length+')';
+  document.getElementById('sig-arrow').className='expand-arrow'+(sigOpen?' open':'');
+}
+
+function renderTrades(trades){
+  allTrades=trades;
+  const preview=trades.slice(0,4),extra=trades.slice(4);
+  document.getElementById('trades-preview').innerHTML=preview.length?preview.map(tradeHTML).join(''):'<div class="empty">No trades yet</div>';
+  if(extra.length){
+    document.getElementById('trades-extra').innerHTML=extra.map(tradeHTML).join('');
+    const btn=document.getElementById('trades-expand-btn');
+    btn.style.display='flex';
+    if(!tradesOpen)document.getElementById('trades-expand-txt').textContent='Show all trades ('+trades.length+')';
+  } else {
+    document.getElementById('trades-expand-btn').style.display='none';
+    document.getElementById('trades-extra').style.display='none';
+  }
+}
+function renderSig(history){
+  allSig=history;
+  const preview=history.slice(0,4),extra=history.slice(4);
+  document.getElementById('sig-preview').innerHTML=preview.length?preview.map(sigHTML).join(''):'<div class="empty">No history yet</div>';
+  if(extra.length){
+    document.getElementById('sig-extra').innerHTML=extra.map(sigHTML).join('');
+    const btn=document.getElementById('sig-expand-btn');
+    btn.style.display='flex';
+    if(!sigOpen)document.getElementById('sig-expand-txt').textContent='Show all decisions ('+history.length+')';
+  } else {
+    document.getElementById('sig-expand-btn').style.display='none';
+    document.getElementById('sig-extra').style.display='none';
+  }
+}
+
+async function fetchStats(){
+  try{
+    const [sr,tr]=await Promise.all([
+      fetch(API+'/admin/stats',{headers:{'x-admin-token':adminToken}}),
+      fetch(API+'/tracker')
+    ]);
+    if(sr.status===401){logout();return;}
+    const d=await sr.json(),t=await tr.json();
+
+    const sig=d.signal,p=d.paper,market=d.market,dec=d.decision;
+    const w=sig.wins,l=sig.losses,tot=w+l;
+
+    document.getElementById('h-users').textContent=d.liveUsers||0;
+    const net=p.balance-p.startBalance,roi=((net/p.startBalance)*100).toFixed(1);
+    document.getElementById('h-balance').textContent='$'+fmt(p.balance);
+    document.getElementById('h-roi').textContent=(net>=0?'+$':'-$')+fmt(Math.abs(net))+' · '+roi+'% ROI';
+    document.getElementById('h-winrate').textContent=tot>0?Math.round(w/tot*100)+'%':'—';
+    document.getElementById('h-wl').textContent=`${w}W ${l}L · ${sig.skips}S`;
+    if(dec){
+      const sv=document.getElementById('h-signal');
+      sv.textContent=dec.decision==='BUY UP'?'YES · UP':dec.decision==='BUY DOWN'?'NO · DOWN':'NO TRADE';
+      sv.style.color=dec.decision==='BUY UP'?'var(--green)':dec.decision==='BUY DOWN'?'var(--red)':'var(--amber)';
+      document.getElementById('h-conf').textContent='Conf '+Math.round((dec.conf||0)*100)+'% · Quality '+Math.round((dec.quality||0)*100)+'%';
+    }
+
+    document.getElementById('p-bal').textContent='$'+fmt(p.balance);
+    document.getElementById('p-bal').style.color=p.balance>=p.startBalance?'var(--green)':'var(--red)';
+    document.getElementById('p-roi-sub').textContent=(net>=0?'+$':'-$')+fmt(Math.abs(net))+' since reset · '+roi+'% ROI';
+    document.getElementById('p-roi-sub').style.color=net>=0?'var(--green)':'var(--red)';
+    document.getElementById('p-inv').textContent='$'+fmt(p.totalInvested);
+    document.getElementById('p-ret').textContent='$'+fmt(p.totalReturned);
+    const pnl=p.totalReturned-p.totalInvested;
+    const pnlEl=document.getElementById('p-pnl');
+    pnlEl.textContent=(pnl>=0?'+$':'-$')+fmt(Math.abs(pnl));
+    pnlEl.style.color=pnl>=0?'var(--green)':'var(--red)';
+    document.getElementById('bet-size').value=p.betSize;
+
+    document.getElementById('ls-btc').textContent=d.btcPrice?'$'+fmt(d.btcPrice):'—';
+    document.getElementById('ls-market').textContent=market?.slug||'—';
+    document.getElementById('ls-ptb').textContent=market?.startPrice?'$'+fmt(market.startPrice):'—';
+    document.getElementById('ls-yes').textContent=d.odds?'¢'+Math.round(d.odds.yes*100):'—';
+    document.getElementById('ls-no').textContent=d.odds?'¢'+Math.round(d.odds.no*100):'—';
+    if(market){const sl=Math.max(0,market.endSec-Math.floor(Date.now()/1000));document.getElementById('ls-closes').textContent=fmtT(sl);}
+    if(dec){const de=document.getElementById('ls-dec');de.textContent=dec.decision;de.style.color=dec.decision==='BUY UP'?'var(--green)':dec.decision==='BUY DOWN'?'var(--red)':'var(--amber)';}
+
+    renderTrades(p.trades||[]);
+    renderSig([...t.history].reverse());
+  }catch(e){console.error(e);}
+}
+function startPolling(){fetchStats();pollTimer=setInterval(fetchStats,3000);}
 </script>
 </body>
 </html>
