@@ -426,12 +426,22 @@ function connect(){
       render(currentMarket, latestOdds);
       if(!lockedDecision || lockedDecision.wts !== msg.market.wts) {
         lockedDecision=null;
-        setTimeout(runEngine, 2000);
+        // Check server for existing locked decision first (survives refresh)
+        fetchLockedDecision();
+      } else {
+        renderPredCard(lockedDecision);
       }
     }
     if(msg.type==='btc_price'){ btcPrice=msg.price; setBTC(btcPrice); updateDir(); }
     if(msg.type==='odds'){ latestOdds={yes:msg.yes,no:msg.no}; updateOdds(msg.yes,msg.no); }
     if(msg.type==='tracker'){ tracker=msg.tracker; renderTracker(); }
+    if(msg.type==='decision'){
+      // Server is broadcasting a decision — use it if it's for current window
+      if(msg.decision && currentMarket && msg.decision.wts===currentMarket.wts && !msg.decision.resolved){
+        lockedDecision=msg.decision;
+        renderPredCard(lockedDecision);
+      }
+    }
   };
   ws.onclose = ()=>{ setWS('disconnected'); setTimeout(connect, reconnDelay=Math.min(reconnDelay*1.5,15000)); };
   ws.onerror = ()=>{ setWS('disconnected'); };
@@ -439,7 +449,29 @@ function connect(){
 connect();
 
 // ── TRACKER ──────────────────────────────────────────────────────────────────
-async function loadTracker(){
+async function fetchLockedDecision(){
+  try{
+    const r=await fetch('https://v3-production-1fb6.up.railway.app/decision',{signal:AbortSignal.timeout(5000)});
+    if(!r.ok) throw new Error('no decision');
+    const d=await r.json();
+    if(d && d.wts === currentMarket?.wts && !d.resolved){
+      lockedDecision=d;
+      renderPredCard(lockedDecision);
+      console.log('[ENGINE] loaded locked decision from server:',d.decision);
+      return;
+    }
+  }catch(e){}
+  // No server decision — run engine fresh
+  setTimeout(runEngine, 2000);
+}
+
+async function saveDecision(d){
+  try{
+    await fetch('https://v3-production-1fb6.up.railway.app/decision',{
+      method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)
+    });
+  }catch(e){}
+}
   try{ const r=await fetch(TRACKER_URL,{signal:AbortSignal.timeout(5000)}); if(r.ok){tracker=await r.json();renderTracker();} }catch(e){}
 }
 async function saveTracker(){
@@ -567,6 +599,7 @@ async function runEngine(){
   tracker.history=tracker.history.filter(h=>h.window!==currentMarket.wts);
   tracker.history.push({time,decision,result:'PENDING',window:currentMarket.wts});
   if(tracker.history.length>50)tracker.history.shift();
+  saveDecision(lockedDecision);
   saveTracker(); renderTracker(); renderPredCard(lockedDecision);
 }
 
