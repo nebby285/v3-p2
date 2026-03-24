@@ -56,6 +56,19 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .live-badge.live .ws-dot{animation:blink 1.2s ease-in-out infinite}
 .live-badge.settled{color:var(--muted);border-color:var(--border2)}
 .timer-strip{display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--border);background:var(--c2)}
+.price-grid{display:grid;grid-template-columns:1fr 1fr;background:var(--border);gap:1px;border-bottom:1px solid var(--border)}
+.price-col{background:var(--c1);padding:12px 14px}
+.pc-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace;margin-bottom:5px}
+.pc-val{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;letter-spacing:-1px}
+.pc-hint{font-size:9px;color:var(--muted);margin-top:3px;font-family:'JetBrains Mono',monospace}
+.dchip{display:inline-flex;align-items:center;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;padding:2px 7px;border-radius:4px;margin-top:4px}
+.dchip.up{background:var(--gd);color:var(--green);border:1px solid var(--gb)}
+.dchip.down{background:var(--rd);color:var(--red);border:1px solid var(--rb)}
+.dchip.flat{background:rgba(60,60,86,.12);color:var(--sub);border:1px solid var(--border2)}
+.vs-bar{padding:9px 14px;border-bottom:1px solid var(--border);background:var(--c2);text-align:center}
+.vs-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace;margin-bottom:3px}
+.vs-val{font-size:13px;font-weight:700;font-family:'JetBrains Mono',monospace}
+.vs-val.up{color:var(--green)}.vs-val.down{color:var(--red)}.vs-val.flat{color:var(--sub)}
 .timer-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:'JetBrains Mono',monospace;flex-shrink:0}
 #timer-val{font-size:14px;font-weight:700;font-family:'JetBrains Mono',monospace;min-width:40px;color:var(--amber)}
 .timer-track{flex:1;height:3px;background:var(--border2);border-radius:2px;overflow:hidden}
@@ -318,15 +331,25 @@ setInterval(()=>{if(pendingOdds){applyOdds(pendingOdds.yes,pendingOdds.no);pendi
 function render(market,odds){
   const now=Math.floor(Date.now()/1000),secsLeft=Math.max(0,market.endSec-now),isLive=secsLeft>0;
   const pct=Math.max(0,Math.min(100,(secsLeft/300)*100));
-  const yp=odds.yes,np=odds.no;
+  const yp=odds.yes,np=odds.no,sp=market.startPrice;
   const fh=d=>d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'America/New_York'});
   const sd=new Date(market.wts*1000),ed=new Date(market.endSec*1000);
   document.getElementById('hero-window').textContent=fh(sd)+' – '+fh(ed)+' ET';
-  if(market.startPrice) document.getElementById('ptb-val').textContent='$'+fmt(market.startPrice);
+  if(sp) document.getElementById('ptb-val').textContent='$'+fmt(sp);
   const bc=pct<20?'var(--red)':pct<40?'var(--amber)':'var(--green)';
+  let diff=btcPrice&&sp?btcPrice-sp:null,diffPct=diff!=null?((diff/sp)*100).toFixed(3):null;
+  let dirHtml='<div class="dchip flat" id="dtag">— loading</div>';
+  if(diff!=null){if(diff>0)dirHtml=`<div class="dchip up" id="dtag">▲ +${diffPct}%</div>`;else if(diff<0)dirHtml=`<div class="dchip down" id="dtag">▼ ${diffPct}%</div>`;else dirHtml=`<div class="dchip flat" id="dtag">→ FLAT</div>`;}
+  let vsClass='flat',vsTxt='Waiting...';
+  if(diff!=null){const usd=(diff>=0?'+':'')+fmt(diff);if(diff>0){vsClass='up';vsTxt='$'+usd+' (+'+diffPct+'%)';}else if(diff<0){vsClass='down';vsTxt='$'+usd+' ('+diffPct+'%)';}else{vsClass='flat';vsTxt='$0.00 (0.000%)';}}
   document.getElementById('main').innerHTML=`
   <div class="card ${isLive?'live':''}">
     <div class="card-head"><div class="card-title">BTC Up or Down · ${fh(sd)}–${fh(ed)}</div><div class="live-badge ${isLive?'live':'settled'}"><div class="ws-dot"></div>${isLive?'LIVE':'SETTLED'}</div></div>
+    <div class="price-grid">
+      <div class="price-col"><div class="pc-lbl">Price to Beat</div><div class="pc-val">${sp?'$'+fmt(sp):'—'}</div><div class="pc-hint">Chainlink at window open</div></div>
+      <div class="price-col"><div class="pc-lbl">Current Price</div><div class="pc-val" id="cur-val">${btcPrice?'$'+fmt(btcPrice):'—'}</div>${dirHtml}</div>
+    </div>
+    <div class="vs-bar"><div class="vs-lbl">Current vs Target</div><div class="vs-val ${vsClass}" id="vs-val">${vsTxt}</div></div>
     ${isLive?`<div class="timer-strip"><div class="timer-lbl">Closes in</div><div id="timer-val">${fmtT(secsLeft)}</div><div class="timer-track"><div class="timer-fill" id="timer-fill" style="width:${pct}%;background:${bc}"></div></div></div>`:''}
     <div class="odds-grid">
       <div class="odd yes"><div class="odd-top"><div class="odd-dir">↑ YES · Up</div><div class="odd-pct" id="yes-pct">${Math.round(yp*100)}% implied</div></div><div class="odd-price" id="yes-p">¢${Math.round(yp*100)}</div><div class="odd-unit">per share</div><div class="odd-pay" id="yes-pay">Pays <strong>${yp>0?(1/yp).toFixed(2):'—'}x</strong> if higher</div></div>
@@ -344,6 +367,14 @@ function startCd(){
     const tv=document.getElementById('timer-val'),tf=document.getElementById('timer-fill');
     if(tv)tv.textContent=fmtT(s);
     if(tf){tf.style.width=p+'%';tf.style.background=p<20?'var(--red)':p<40?'var(--amber)':'var(--green)';}
+    // Update live price vs PTB
+    if(btcPrice&&currentMarket.startPrice){
+      const sp=currentMarket.startPrice,diff=btcPrice-sp,pct=((diff/sp)*100).toFixed(3);
+      const cv=document.getElementById('cur-val'),dg=document.getElementById('dtag'),vv=document.getElementById('vs-val');
+      if(cv)cv.textContent='$'+fmt(btcPrice);
+      if(dg){if(diff>0){dg.className='dchip up';dg.textContent='▲ +'+pct+'%';}else if(diff<0){dg.className='dchip down';dg.textContent='▼ '+pct+'%';}else{dg.className='dchip flat';dg.textContent='→ FLAT';}}
+      if(vv){const usd=(diff>=0?'+':'')+fmt(diff);if(diff>0){vv.className='vs-val up';vv.textContent='$'+usd+' (+'+pct+'%)';}else if(diff<0){vv.className='vs-val down';vv.textContent='$'+usd+' ('+pct+'%)';}else{vv.className='vs-val flat';vv.textContent='$0.00 (0.000%)';}}
+    }
     updateDelta();
     const wl=document.getElementById('eng-wl'),cd=document.getElementById('eng-cd');
     if(wl)wl.textContent=fmtT(s);
@@ -396,7 +427,10 @@ function resolveDecision(){if(lockedDecision)lockedDecision.resolved=true;}
 function calcStreak(history){
   const resolved=history.filter(h=>h.result==='WIN'||h.result==='LOSS');
   let best=0,cur=0;
-  for(const h of resolved){if(h.result==='WIN'){cur++;best=Math.max(best,cur);}else cur=0;}
+  for(const h of resolved){
+    if(h.result==='WIN'){cur++;best=Math.max(best,cur);}
+    else cur=0;
+  }
   return best;
 }
 
