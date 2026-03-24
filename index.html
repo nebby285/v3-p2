@@ -320,7 +320,12 @@ function connect(){
       if(newWindow&&currentMarket) resolveDecision();
       currentMarket=msg.market; latestOdds=msg.odds;
       render(currentMarket,latestOdds);
-      if(newWindow) lockedDecision=null;
+      if(newWindow){
+        lockedDecision=null;
+        // Show waiting state, decision comes from server
+        const card=document.getElementById('engine-card');
+        if(card) card.innerHTML=`<div class="pred-head"><div class="pred-head-left">Signal Engine</div><div class="pred-head-right" id="eng-status">Analysing...</div></div><div class="loading"><div class="spinner"></div><div>Calculating signal...</div></div>`;
+      }
       else if(lockedDecision) renderPredCard(lockedDecision);
     }
     if(msg.type==='btc_price'){btcPrice=msg.price;setBTC(btcPrice);updateDir();}
