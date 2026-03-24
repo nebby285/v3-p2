@@ -331,6 +331,11 @@ function connect(){
     if(msg.type==='btc_price'){btcPrice=msg.price;setBTC(btcPrice);updateDir();}
     if(msg.type==='odds'){latestOdds={yes:msg.yes,no:msg.no};updateOdds(msg.yes,msg.no);}
     if(msg.type==='tracker'){tracker=msg.tracker;renderTracker();}
+    if(msg.type==='engine_waiting'){
+      const card=document.getElementById('engine-card');
+      const wait=60-msg.elapsed;
+      if(card&&!lockedDecision) card.innerHTML=`<div class="pred-head"><div class="pred-head-left">Signal Engine</div><div class="pred-head-right">Fires in ~${wait}s</div></div><div class="loading"><div class="spinner"></div><div>Waiting for ${wait}s mark...</div></div>`;
+    }
     if(msg.type==='decision'){
       lockedDecision=msg.decision;
       renderPredCard(lockedDecision);
@@ -341,19 +346,13 @@ function connect(){
 }
 connect();
 
-// Tracker
+// Tracker — read only, server owns all the math
 async function loadTracker(){
   try{const r=await fetch(API+'/tracker',{signal:AbortSignal.timeout(5000)});if(r.ok){tracker=await r.json();renderTracker();setTimeout(drawEquityCurve,300);}}catch(e){}
 }
 function resolveDecision(){
-  if(!lockedDecision||lockedDecision.resolved)return;
-  lockedDecision.resolved=true;
-  // Tell server to resolve — server does the math and broadcasts to all devices
-  fetch(API+'/resolve',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({wts:lockedDecision.wts,decision:lockedDecision.decision,startPrice:lockedDecision.startPrice,btcPrice})
-  }).catch(()=>{});
+  // Browser does nothing — server resolves when next window loads
+  if(lockedDecision) lockedDecision.resolved=true;
 }
 function renderTracker(){
   const w=tracker.wins||0,l=tracker.losses||0,s=tracker.skips||0,t=w+l;
