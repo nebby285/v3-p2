@@ -147,10 +147,10 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 @keyframes spin{to{transform:rotate(360deg)}}
 @media(min-width:860px){
   #topbar{padding:0 24px;height:48px}
-  #page-body{display:grid;grid-template-columns:1fr 1fr;grid-template-areas:'left right' 'tracker tracker';max-width:1060px;margin:0 auto;align-items:start}
-  .left-col{padding:0 8px 0 14px;grid-area:left}
-  .right-col{padding:0 14px 0 8px;border-left:1px solid var(--border);grid-area:right}
-  #tracker-full{grid-area:tracker;border-top:1px solid var(--border);padding:0 14px}
+  #page-body{display:grid;grid-template-columns:1fr 1fr;max-width:1060px;margin:0 auto;align-items:start}
+  .left-col{padding:0 8px 0 14px}
+  .right-col{padding:0 14px 0 8px;border-left:1px solid var(--border)}
+  #tracker-full{max-width:1060px;margin:0 auto;padding:0 14px;border-top:1px solid var(--border)}
   #tracker-full .sec-lbl{padding:13px 0 7px}
   #tracker-full .tracker-card,#tracker-full .disc{margin:0 0 8px}
   .sec-lbl{padding:13px 4px 7px}
@@ -206,13 +206,15 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
         </div>
         <div class="loading"><div class="spinner"></div><div id="eng-msg">Connecting to feed...</div></div>
       </div>
-      <div class="sig-breakdown" id="sig-breakdown" style="display:none">
-        <div class="sb-head">Signal Breakdown</div>
-        <div class="sb-grid" id="sb-grid"></div>
-      </div>
+    </div>
+    <div class="sig-breakdown" id="sig-breakdown" style="display:none">
+      <div class="sb-head">Signal Breakdown</div>
+      <div class="sb-grid" id="sb-grid"></div>
     </div>
   </div>
-  <div id="tracker-full">
+</div>
+
+<div id="tracker-full">
     <div class="sec-lbl">Track Record</div>
     <div class="tracker-card">
       <div class="tr-head">
