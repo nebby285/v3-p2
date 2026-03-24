@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BTC Signal · 5M</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0b0b0f;--c1:#111116;--c2:#17171e;--c3:#1e1e28;
+  --border:#25252f;--border2:#32323f;--text:#f4f4fb;--sub:#8888a8;--muted:#44445a;
+  --green:#00e87a;--gd:rgba(0,232,122,0.07);--gb:rgba(0,232,122,0.18);
+  --red:#ff3366;--rd:rgba(255,51,102,0.07);--rb:rgba(255,51,102,0.18);
+  --amber:#ffbb00;--blue:#5599ff;--purple:#aa77ff;--radius:14px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased;padding:0 0 60px}
+
+/* TOPBAR */
+#topbar{position:sticky;top:0;z-index:99;background:rgba(11,11,15,.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:12px 18px;display:flex;align-items:center;justify-content:space-between}
+.tb-brand{display:flex;align-items:center;gap:10px}
+.tb-icon{width:28px;height:28px;background:#f7931a;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;font-family:'JetBrains Mono',monospace;flex-shrink:0}
+.tb-name{font-size:14px;font-weight:800;letter-spacing:-.4px}
+.tb-tag{font-size:10px;color:var(--sub);font-weight:500;margin-top:1px}
+.tb-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.ws-pill{display:flex;align-items:center;gap:5px;font-size:9px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.06em;padding:3px 8px;border-radius:20px;border:1px solid;transition:all .3s}
+.ws-pill.connected{color:var(--green);border-color:var(--gb);background:var(--gd)}
+.ws-pill.connecting{color:var(--amber);border-color:rgba(255,187,0,.3);background:rgba(255,187,0,.07)}
+.ws-pill.disconnected{color:var(--muted);border-color:var(--border2);background:transparent}
+.ws-dot{width:4px;height:4px;border-radius:50%;background:currentColor}
+.ws-pill.connected .ws-dot{animation:blink 1.5s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+#tb-clock{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted)}
+
+/* HERO */
+#hero{padding:24px 18px 20px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,var(--c1) 0%,var(--bg) 100%);display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
+.hero-label{font-size:9px;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;font-family:'JetBrains Mono',monospace;margin-bottom:5px}
+#btc-price{font-family:'JetBrains Mono',monospace;font-size:34px;font-weight:700;letter-spacing:-2px;transition:color .2s}
+#btc-price.up{color:var(--green)}
+#btc-price.down{color:var(--red)}
+.hero-sub{display:flex;align-items:center;gap:6px;margin-top:5px}
+.cl-chip{font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;background:rgba(68,136,255,.12);border:1px solid rgba(68,136,255,.25);color:#6699ff;padding:2px 5px;border-radius:2px}
+.hero-sub-txt{font-size:10px;color:var(--sub)}
+.hero-right{text-align:right;flex-shrink:0}
+.hero-window-label{font-size:9px;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;font-family:'JetBrains Mono',monospace;margin-bottom:3px}
+#hero-window{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--sub)}
+
+/* LAYOUT */
+#page-body{display:block}
+.sec-label{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;padding:16px 16px 8px;font-family:'JetBrains Mono',monospace}
+
+/* CARDS */
+.card{background:var(--c1);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin:0 12px 10px}
+.card.live{border-color:rgba(0,232,122,.15)}
+.card-head{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--c2)}
+.card-head-title{font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.05em}
+.live-dot-badge{display:flex;align-items:center;gap:5px;font-size:9px;font-weight:700;font-family:'JetBrains Mono',monospace;padding:3px 9px;border-radius:20px;border:1px solid}
+.live-dot-badge.live{color:var(--green);border-color:var(--gb);background:var(--gd)}
+.live-dot-badge.live .ws-dot{animation:blink 1.2s ease-in-out infinite}
+.live-dot-badge.settled{color:var(--muted);border-color:var(--border2);background:transparent}
+
+/* PRICE GRID */
+.price-grid{display:grid;grid-template-columns:1fr 1fr;background:var(--border);gap:1px;border-bottom:1px solid var(--border)}
+.price-col{background:var(--c1);padding:14px 16px}
+.pc-label{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace;margin-bottom:6px}
+.pc-val{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;letter-spacing:-1px}
+.pc-hint{font-size:9px;color:var(--muted);margin-top:3px;font-family:'JetBrains Mono',monospace}
+.dchip{display:inline-flex;align-items:center;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;padding:2px 7px;border-radius:4px;margin-top:5px}
+.dchip.up{background:var(--gd);color:var(--green);border:1px solid var(--gb)}
+.dchip.down{background:var(--rd);color:var(--red);border:1px solid var(--rb)}
+.dchip.flat{background:rgba(68,68,90,.12);color:var(--sub);border:1px solid var(--border2)}
+
+/* VS BAR */
+.vs-bar{padding:10px 16px;border-bottom:1px solid var(--border);background:var(--c2);text-align:center}
+.vs-label{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace;margin-bottom:4px}
+.vs-val{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700}
+.vs-val.up{color:var(--green)}.vs-val.down{color:var(--red)}.vs-val.flat{color:var(--sub)}
+
+/* TIMER */
+.timer-row{padding:8px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--c2)}
+.timer-label{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:'JetBrains Mono',monospace;flex-shrink:0}
+#timer-val{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;flex-shrink:0;min-width:40px}
+.timer-track{flex:1;height:3px;background:var(--border2);border-radius:2px;overflow:hidden}
+.timer-fill{height:100%;border-radius:2px;transition:width 1s linear}
+
+/* ODDS */
+.odds-grid{padding:10px 16px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.odd{border-radius:8px;padding:10px 12px;border:1px solid;display:flex;flex-direction:column;gap:4px}
+.odd.yes{background:var(--gd);border-color:var(--gb)}
+.odd.no{background:var(--rd);border-color:var(--rb)}
+.odd-top{display:flex;align-items:center;justify-content:space-between}
+.odd-dir{font-size:10px;font-weight:800}
+.odd.yes .odd-dir{color:var(--green)}.odd.no .odd-dir{color:var(--red)}
+.odd-pct{font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--sub)}
+.odd-price{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;letter-spacing:-1px;line-height:1}
+.odd.yes .odd-price{color:var(--green)}.odd.no .odd-price{color:var(--red)}
+.odd-unit{font-size:9px;color:var(--sub);font-family:'JetBrains Mono',monospace}
+.odd-pay{font-size:9px;color:var(--sub);font-family:'JetBrains Mono',monospace}
+.odd.yes .odd-pay strong{color:var(--green)}.odd.no .odd-pay strong{color:var(--red)}
+
+/* PREDICTION CARD */
+.pred-card{background:var(--c1);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin:0 12px 10px;transition:border-color .4s}
+.pred-card.up{border-color:rgba(0,232,122,.25)}.pred-card.down{border-color:rgba(255,51,102,.25)}.pred-card.none{border-color:rgba(255,187,0,.15)}
+.pred-head{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--c2)}
+.pred-head-left{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-family:'JetBrains Mono',monospace}
+.pred-head-right{font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--muted)}
+.pred-main{padding:24px 16px 18px;text-align:center}
+.pred-main.up{background:linear-gradient(180deg,rgba(0,232,122,.06) 0%,transparent 100%)}
+.pred-main.down{background:linear-gradient(180deg,rgba(255,51,102,.06) 0%,transparent 100%)}
+.pred-main.none{background:linear-gradient(180deg,rgba(255,187,0,.04) 0%,transparent 100%)}
+.pred-icon{font-size:26px;margin-bottom:6px;line-height:1}
+.pred-label{font-size:34px;font-weight:900;letter-spacing:-1.5px;line-height:1;margin-bottom:6px}
+.pred-main.up .pred-label{color:var(--green)}.pred-main.down .pred-label{color:var(--red)}.pred-main.none .pred-label{color:var(--amber)}
+.pred-sublabel{font-size:11px;color:var(--sub);font-family:'JetBrains Mono',monospace;margin-bottom:8px}
+.pred-scores{font-size:11px;color:var(--sub);font-family:'JetBrains Mono',monospace}
+.pred-scores .bull{color:var(--green);font-weight:700}.pred-scores .bear{color:var(--red);font-weight:700}
+.conf-section{padding:10px 16px;border-top:1px solid var(--border)}
+.conf-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.conf-label{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace}
+.conf-pct{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700}
+.conf-track{height:5px;background:var(--border2);border-radius:3px;overflow:hidden}
+.conf-fill{height:100%;border-radius:3px;transition:width .6s ease}
+.next-check{padding:14px 16px;text-align:center;border-top:1px solid var(--border);background:var(--c2)}
+.nc-label{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace;margin-bottom:4px}
+.nc-time{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;color:var(--amber)}
+.sig-list{padding:12px 16px;display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--border)}
+.sig-title{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace;margin-bottom:6px}
+.sig-row{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-radius:6px;background:var(--c2);border:1px solid var(--border)}
+.sig-name{font-size:9px;font-weight:700;color:var(--sub);font-family:'JetBrains Mono',monospace;min-width:110px}
+.sig-note{font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 8px}
+.sig-badge{font-size:8px;font-weight:700;font-family:'JetBrains Mono',monospace;padding:2px 6px;border-radius:3px;white-space:nowrap}
+.sb{background:var(--gd);color:var(--green);border:1px solid var(--gb)}
+.sr{background:var(--rd);color:var(--red);border:1px solid var(--rb)}
+.sn{background:rgba(68,68,90,.12);color:var(--muted);border:1px solid var(--border2)}
+.pred-reason{padding:10px 16px;border-top:1px solid var(--border);background:var(--c2)}
+.reason-txt{font-size:9px;color:var(--sub);font-family:'JetBrains Mono',monospace;line-height:1.6}
+
+/* TRACKER */
+.tracker-card{background:var(--c1);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin:0 12px 10px}
+.tracker-head{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--c2)}
+.tracker-head-title{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-family:'JetBrains Mono',monospace}
+.tracker-stats{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--border)}
+.ts-cell{padding:12px 10px;text-align:center;border-right:1px solid var(--border)}
+.ts-cell:last-child{border-right:none}
+.ts-label{font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:'JetBrains Mono',monospace;margin-bottom:4px}
+.ts-val{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700}
+.ts-val.win{color:var(--green)}.ts-val.loss{color:var(--red)}.ts-val.skip{color:var(--sub)}.ts-val.rate{color:var(--amber)}
+.tracker-history{padding:12px 16px}
+.th-title{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace;margin-bottom:8px}
+.th-list{display:flex;flex-direction:column;gap:4px}
+.th-row{display:flex;align-items:center;justify-content:space-between;padding:5px 10px;border-radius:6px;background:var(--c2);border:1px solid var(--border)}
+.th-time{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);flex-shrink:0;min-width:75px}
+.th-pred{font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;flex:1;text-align:center}
+.th-pred.up{color:var(--green)}.th-pred.down{color:var(--red)}.th-pred.skip{color:var(--sub)}
+.th-result{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;flex-shrink:0}
+.th-result.win{background:var(--gd);color:var(--green);border:1px solid var(--gb)}
+.th-result.loss{background:var(--rd);color:var(--red);border:1px solid var(--rb)}
+.th-result.pending{background:rgba(255,187,0,.08);color:var(--amber);border:1px solid rgba(255,187,0,.2)}
+.th-result.skip{background:rgba(68,68,90,.1);color:var(--muted);border:1px solid var(--border2)}
+.th-empty{text-align:center;padding:16px;font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+
+/* MISC */
+.disclaimer{margin:0 12px 10px;padding:10px 14px;border-radius:8px;background:rgba(68,68,90,.06);border:1px solid var(--border)}
+.disclaimer-txt{font-size:9px;color:var(--muted);line-height:1.6;font-family:'JetBrains Mono',monospace;text-align:center}
+.loading{display:flex;flex-direction:column;align-items:center;padding:50px 20px;gap:12px;color:var(--muted);font-size:11px;font-family:'JetBrains Mono',monospace}
+.spinner{width:22px;height:22px;border:2px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* DESKTOP */
+@media(min-width:860px){
+  #topbar{padding:0 32px;height:52px}
+  #hero{padding:22px 32px 20px}
+  #page-body{display:grid;grid-template-columns:1fr 1fr;max-width:1100px;margin:0 auto;align-items:start}
+  .left-col{padding:0 8px 0 16px}
+  .right-col{padding:0 16px 0 8px;border-left:1px solid var(--border)}
+  .sec-label{padding:16px 4px 8px}
+  .card,.pred-card,.tracker-card{margin:0 0 10px}
+  .disclaimer{margin:0 0 10px}
+  #tracker-full{max-width:1100px;margin:0 auto;padding:0 16px}
+  #tracker-full .sec-label{padding:16px 0 8px}
+  #tracker-full .tracker-card{margin:0 0 10px}
+  #tracker-full .disclaimer{margin:0 0 10px}
+}
+@media(max-width:859px){
+  body{max-width:480px;margin:0 auto}
+  .left-col,.right-col{padding:0}
+  #tracker-full{padding:0}
+}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <div class="tb-brand">
+    <div class="tb-icon">₿</div>
+    <div><div class="tb-name">BTC Signal</div><div class="tb-tag">5-minute prediction markets</div></div>
+  </div>
+  <div class="tb-right">
+    <div class="ws-pill connecting" id="ws-pill"><div class="ws-dot"></div><span id="ws-label">CONNECTING</span></div>
+    <div id="tb-clock">--:--:-- UTC</div>
+  </div>
+</div>
+
+<div id="hero">
+  <div>
+    <div class="hero-label">Bitcoin / USD</div>
+    <div id="btc-price">—</div>
+    <div class="hero-sub"><div class="cl-chip">CHAINLINK</div><div class="hero-sub-txt">same oracle as Polymarket</div></div>
+  </div>
+  <div class="hero-right">
+    <div class="hero-window-label">Current window</div>
+    <div id="hero-window">—</div>
+  </div>
+</div>
+
+<div id="page-body">
+  <div class="left-col">
+    <div class="sec-label">Market</div>
+    <div id="main"><div class="loading"><div class="spinner"></div><div>Connecting...</div></div></div>
+  </div>
+  <div class="right-col">
+    <div class="sec-label">Prediction</div>
+    <div id="engine-wrap">
+      <div class="pred-card" id="engine-card">
+        <div class="pred-head">
+          <div class="pred-head-left">Signal Engine</div>
+          <div class="pred-head-right" id="eng-status">Waiting for data...</div>
+        </div>
+        <div class="loading"><div class="spinner"></div><div id="eng-msg">Connecting to feed...</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="tracker-full">
+  <div class="sec-label">Track Record</div>
+  <div class="tracker-card">
+    <div class="tracker-head">
+      <div class="tracker-head-title">Signal Performance</div>
+      <div style="font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace" id="tracker-session">Session</div>
+    </div>
+    <div class="tracker-stats">
+      <div class="ts-cell"><div class="ts-label">Wins</div><div class="ts-val win" id="t-wins">0</div></div>
+      <div class="ts-cell"><div class="ts-label">Losses</div><div class="ts-val loss" id="t-losses">0</div></div>
+      <div class="ts-cell"><div class="ts-label">Skipped</div><div class="ts-val skip" id="t-skips">0</div></div>
+      <div class="ts-cell"><div class="ts-label">Win Rate</div><div class="ts-val rate" id="t-rate">—</div></div>
+    </div>
+    <div class="tracker-history">
+      <div class="th-title">Equity Curve</div>
+      <canvas id="equity-chart" height="70" style="width:100%;display:block;margin-bottom:14px;border-radius:6px;overflow:hidden"></canvas>
+      <div class="th-title">Recent Decisions</div>
+      <div class="th-list" id="tracker-list"><div class="th-empty">No decisions yet</div></div>
+    </div>
+  </div>
+  <div class="disclaimer"><div class="disclaimer-txt">Not financial advice. Automated signal engine for informational purposes only.</div></div>
+</div>
+
+<script>
+const WS_URL = 'wss://v3-production-1fb6.up.railway.app';
+const TRACKER_URL = 'https://v3-production-1fb6.up.railway.app/tracker';
+
+let ws, currentMarket, latestOdds={yes:.5,no:.5}, btcPrice, prevBTC, cdTimer, reconnDelay=1000;
+let lockedDecision = null;
+let tracker = {wins:0,losses:0,skips:0,history:[]};
+
+// ── CLOCK ────────────────────────────────────────────────────────────────────
+setInterval(()=>{
+  const n=new Date();
+  document.getElementById('tb-clock').textContent =
+    [n.getUTCHours(),n.getUTCMinutes(),n.getUTCSeconds()].map(v=>String(v).padStart(2,'0')).join(':') + ' UTC';
+},1000);
+
+// ── HELPERS ──────────────────────────────────────────────────────────────────
+const fmt = (n,d=2) => n==null||isNaN(n) ? '—' : parseFloat(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+const fmtT = s => `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+
+// ── BTC PRICE ────────────────────────────────────────────────────────────────
+let lastBTCt = 0;
+function setBTC(p) {
+  if(Date.now()-lastBTCt < 1000) return;
+  lastBTCt = Date.now();
+  const el = document.getElementById('btc-price');
+  if(!el) return;
+  el.textContent = '$'+fmt(p);
+  if(prevBTC!=null){ el.className = p>prevBTC?'up':p<prevBTC?'down':''; setTimeout(()=>el.className='',700); }
+  prevBTC = p;
+}
+
+// ── ODDS ─────────────────────────────────────────────────────────────────────
+let lastOddsT=0, pendingOdds=null;
+function updateOdds(yes,no) {
+  pendingOdds={yes,no};
+  if(Date.now()-lastOddsT<2000) return;
+  applyOdds(yes,no);
+}
+function applyOdds(yes,no) {
+  lastOddsT=Date.now();
+  const ids = ['yes-p','no-p','yes-pct','no-pct','yes-pay','no-pay'];
+  const [yp,np,ypc,npc,ypy,npy] = ids.map(id=>document.getElementById(id));
+  if(!yp) return;
+  yp.textContent='¢'+Math.round(yes*100); np.textContent='¢'+Math.round(no*100);
+  ypc.textContent=Math.round(yes*100)+'% implied'; npc.textContent=Math.round(no*100)+'% implied';
+  ypy.innerHTML=`Pays <strong>${yes>0?(1/yes).toFixed(2):'—'}x</strong> if BTC closes higher`;
+  npy.innerHTML=`Pays <strong>${no>0?(1/no).toFixed(2):'—'}x</strong> if BTC closes lower`;
+}
+setInterval(()=>{ if(pendingOdds){applyOdds(pendingOdds.yes,pendingOdds.no);pendingOdds=null;} },2000);
+
+// ── DIRECTION ────────────────────────────────────────────────────────────────
+function updateDir() {
+  const cEl=document.getElementById('cur-val'), dEl=document.getElementById('dtag'), vEl=document.getElementById('vs-val');
+  if(!cEl||!btcPrice||!currentMarket?.startPrice) return;
+  const sp=currentMarket.startPrice, diff=btcPrice-sp, pct=((diff/sp)*100).toFixed(3);
+  cEl.textContent='$'+fmt(btcPrice);
+  if(dEl) {
+    if(diff>0){dEl.className='dchip up';dEl.textContent='▲ +'+pct+'%';}
+    else if(diff<0){dEl.className='dchip down';dEl.textContent='▼ '+pct+'%';}
+    else{dEl.className='dchip flat';dEl.textContent='→ FLAT';}
+  }
+  if(vEl) {
+    const usd=(diff>=0?'+':'')+fmt(diff);
+    if(diff>0){vEl.className='vs-val up';vEl.textContent='$'+usd+' (+'+pct+'%)';}
+    else if(diff<0){vEl.className='vs-val down';vEl.textContent='$'+usd+' ('+pct+'%)';}
+    else{vEl.className='vs-val flat';vEl.textContent='$0.00 (0.000%)';}
+  }
+}
+
+// ── RENDER MARKET ────────────────────────────────────────────────────────────
+function render(market, odds) {
+  const now=Math.floor(Date.now()/1000), secsLeft=Math.max(0,market.endSec-now), isLive=secsLeft>0;
+  const pct=Math.max(0,Math.min(100,(secsLeft/300)*100));
+  const bc=pct<20?'var(--red)':pct<40?'var(--amber)':'var(--green)';
+  const yp=odds.yes, np=odds.no, sp=market.startPrice;
+  const fh = d=>d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'America/New_York'});
+  const startDt=new Date(market.wts*1000), endDt=new Date(market.endSec*1000);
+  document.getElementById('hero-window').textContent = fh(startDt)+' – '+fh(endDt)+' ET';
+
+  let diff=btcPrice&&sp?btcPrice-sp:null, diffPct=diff!=null?((diff/sp)*100).toFixed(3):null;
+  let dirHtml='<div class="dchip flat" id="dtag">— loading</div>';
+  if(diff!=null) {
+    if(diff>0) dirHtml=`<div class="dchip up" id="dtag">▲ +${diffPct}%</div>`;
+    else if(diff<0) dirHtml=`<div class="dchip down" id="dtag">▼ ${diffPct}%</div>`;
+    else dirHtml=`<div class="dchip flat" id="dtag">→ FLAT</div>`;
+  }
+  let vsClass='flat', vsTxt='Waiting for price...';
+  if(diff!=null){const usd=(diff>=0?'+':'')+fmt(diff);if(diff>0){vsClass='up';vsTxt='$'+usd+' (+'+diffPct+'%)';}else if(diff<0){vsClass='down';vsTxt='$'+usd+' ('+diffPct+'%)';}else{vsClass='flat';vsTxt='$0.00 (0.000%)';}}
+
+  document.getElementById('main').innerHTML = `
+  <div class="card ${isLive?'live':''}">
+    <div class="card-head">
+      <div class="card-head-title">BTC Up or Down · ${fh(startDt)}–${fh(endDt)}</div>
+      <div class="live-dot-badge ${isLive?'live':'settled'}"><div class="ws-dot"></div>${isLive?'LIVE':'SETTLED'}</div>
+    </div>
+    <div class="price-grid">
+      <div class="price-col">
+        <div class="pc-label">Price to Beat</div>
+        <div class="pc-val">${sp?'$'+fmt(sp):'—'}</div>
+        <div class="pc-hint">Set at window open</div>
+      </div>
+      <div class="price-col">
+        <div class="pc-label">Current Price</div>
+        <div class="pc-val" id="cur-val">${btcPrice?'$'+fmt(btcPrice):'—'}</div>
+        ${dirHtml}
+      </div>
+    </div>
+    <div class="vs-bar">
+      <div class="vs-label">Current vs Target</div>
+      <div class="vs-val ${vsClass}" id="vs-val">${vsTxt}</div>
+    </div>
+    ${isLive?`<div class="timer-row">
+      <div class="timer-label">Closes in</div>
+      <div id="timer-val">${fmtT(secsLeft)}</div>
+      <div class="timer-track"><div class="timer-fill" id="timer-fill" style="width:${pct}%;background:${bc}"></div></div>
+    </div>`:''}
+    <div class="odds-grid">
+      <div class="odd yes">
+        <div class="odd-top"><div class="odd-dir">↑ YES · Up</div><div class="odd-pct" id="yes-pct">${Math.round(yp*100)}% implied</div></div>
+        <div class="odd-price" id="yes-p">¢${Math.round(yp*100)}</div>
+        <div class="odd-unit">per share</div>
+        <div class="odd-pay" id="yes-pay">Pays <strong>${yp>0?(1/yp).toFixed(2):'—'}x</strong> if BTC closes higher</div>
+      </div>
+      <div class="odd no">
+        <div class="odd-top"><div class="odd-dir">↓ NO · Down</div><div class="odd-pct" id="no-pct">${Math.round(np*100)}% implied</div></div>
+        <div class="odd-price" id="no-p">¢${Math.round(np*100)}</div>
+        <div class="odd-unit">per share</div>
+        <div class="odd-pay" id="no-pay">Pays <strong>${np>0?(1/np).toFixed(2):'—'}x</strong> if BTC closes lower</div>
+      </div>
+    </div>
+  </div>`;
+  startCd();
+}
+
+function startCd() {
+  if(cdTimer) clearInterval(cdTimer);
+  cdTimer = setInterval(()=>{
+    if(!currentMarket) return;
+    const s=Math.max(0,currentMarket.endSec-Math.floor(Date.now()/1000));
+    const p=Math.max(0,Math.min(100,(s/300)*100));
+    const tv=document.getElementById('timer-val'), tf=document.getElementById('timer-fill'), vv=document.getElementById('vs-val');
+    if(tv) tv.textContent=fmtT(s);
+    if(tf){tf.style.width=p+'%';tf.style.background=p<20?'var(--red)':p<40?'var(--amber)':'var(--green)';}
+    if(vv&&btcPrice&&currentMarket?.startPrice){
+      const diff=btcPrice-currentMarket.startPrice,pct=((diff/currentMarket.startPrice)*100).toFixed(3),usd=(diff>=0?'+':'')+fmt(diff);
+      if(diff>0){vv.className='vs-val up';vv.textContent='$'+usd+' (+'+pct+'%)';}
+      else if(diff<0){vv.className='vs-val down';vv.textContent='$'+usd+' ('+pct+'%)';}
+      else{vv.className='vs-val flat';vv.textContent='$0.00 (0.000%)';}
+    }
+  },1000);
+}
+
+// ── WEBSOCKET ────────────────────────────────────────────────────────────────
+function setWS(s){
+  document.getElementById('ws-pill').className='ws-pill '+s;
+  document.getElementById('ws-label').textContent=s.toUpperCase();
+}
+
+function connect(){
+  setWS('connecting');
+  ws = new WebSocket(WS_URL);
+  ws.onopen = ()=>{ setWS('connected'); reconnDelay=1000; };
+  ws.onmessage = (e)=>{
+    const msg = JSON.parse(e.data);
+    if(msg.type==='market'){
+      if(currentMarket && msg.market.wts !== currentMarket.wts) resolveDecision();
+      currentMarket=msg.market; latestOdds=msg.odds;
+      render(currentMarket, latestOdds);
+      if(!lockedDecision || lockedDecision.wts !== msg.market.wts) {
+        lockedDecision=null;
+        setTimeout(runEngine, 2000);
+      }
+    }
+    if(msg.type==='btc_price'){ btcPrice=msg.price; setBTC(btcPrice); updateDir(); }
+    if(msg.type==='odds'){ latestOdds={yes:msg.yes,no:msg.no}; updateOdds(msg.yes,msg.no); }
+    if(msg.type==='tracker'){ tracker=msg.tracker; renderTracker(); }
+  };
+  ws.onclose = ()=>{ setWS('disconnected'); setTimeout(connect, reconnDelay=Math.min(reconnDelay*1.5,15000)); };
+  ws.onerror = ()=>{ setWS('disconnected'); };
+}
+connect();
+
+// ── TRACKER ──────────────────────────────────────────────────────────────────
+async function loadTracker(){
+  try{ const r=await fetch(TRACKER_URL,{signal:AbortSignal.timeout(5000)}); if(r.ok){tracker=await r.json();renderTracker();} }catch(e){}
+}
+async function saveTracker(){
+  try{ await fetch(TRACKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(tracker)}); }catch(e){}
+}
+function resolveDecision(){
+  if(!lockedDecision||lockedDecision.resolved) return;
+  const{decision,startPrice}=lockedDecision; let result='SKIP';
+  if(decision!=='NO TRADE'&&btcPrice&&startPrice){
+    const won=(decision==='BUY UP'&&btcPrice>=startPrice)||(decision==='BUY DOWN'&&btcPrice<startPrice);
+    result=won?'WIN':'LOSS'; if(won)tracker.wins++;else tracker.losses++;
+  } else if(decision==='NO TRADE'){tracker.skips++;result='SKIP';}
+  const idx=tracker.history.findIndex(h=>h.window===lockedDecision.wts);
+  if(idx>=0) tracker.history[idx].result=result;
+  lockedDecision.resolved=true; saveTracker(); renderTracker();
+}
+function renderTracker(){
+  const w=tracker.wins||0,l=tracker.losses||0,s=tracker.skips||0,t=w+l;
+  document.getElementById('t-wins').textContent=w;
+  document.getElementById('t-losses').textContent=l;
+  document.getElementById('t-skips').textContent=s;
+  document.getElementById('t-rate').textContent=t>0?Math.round((w/t)*100)+'%':'—';
+  document.getElementById('tracker-session').textContent=t>0?`${w}W ${l}L · ${Math.round((w/t)*100)}% acc`:'Session';
+  const list=document.getElementById('tracker-list'), history=tracker.history||[];
+  if(!history.length){list.innerHTML='<div class="th-empty">No decisions yet</div>';return;}
+  list.innerHTML=[...history].reverse().slice(0,10).map(h=>{
+    const pc=h.decision==='BUY UP'?'up':h.decision==='BUY DOWN'?'down':'skip';
+    const pt=h.decision==='BUY UP'?'↑ UP':h.decision==='BUY DOWN'?'↓ DOWN':'— SKIP';
+    const rc=h.result==='WIN'?'win':h.result==='LOSS'?'loss':h.result==='PENDING'?'pending':'skip';
+    return`<div class="th-row"><div class="th-time">${h.time}</div><div class="th-pred ${pc}">${pt}</div><div class="th-result ${rc}">${h.result}</div></div>`;
+  }).join('');
+}
+
+// ── ENGINE ────────────────────────────────────────────────────────────────────
+function ema(v,p){const k=2/(p+1);let e=v[0];for(let i=1;i<v.length;i++)e=v[i]*k+e*(1-k);return e;}
+function rsi(c,p=14){if(c.length<p+1)return 50;let g=0,l=0;for(let i=c.length-p;i<c.length;i++){const d=c[i]-c[i-1];d>0?g+=d:l-=d;}const ag=g/p,al=l/p;if(!al)return 100;return 100-(100/(1+ag/al));}
+function avg(a){return a.reduce((s,x)=>s+x,0)/a.length;}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+
+async function fetchCandles(){
+  try{
+    const r=await fetch('https://v3-production-1fb6.up.railway.app/candles',{signal:AbortSignal.timeout(8000)});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    return (await r.json()).map(c=>({open:+c[1],high:+c[2],low:+c[3],close:+c[4],volume:+c[5]}));
+  }catch(e){ console.error('[ENGINE] candle fetch failed:',e.message); return null; }
+}
+
+async function runEngine(){
+  if(!currentMarket||!btcPrice||!currentMarket.startPrice){
+    document.getElementById('eng-msg').textContent='Waiting for market data...';
+    setTimeout(runEngine,3000); return;
+  }
+  if(lockedDecision&&lockedDecision.wts===currentMarket.wts&&!lockedDecision.resolved){
+    renderPredCard(lockedDecision); return;
+  }
+  const secsLeft=Math.max(0,currentMarket.endSec-Math.floor(Date.now()/1000));
+  if(secsLeft<=0){ console.log('[ENGINE] window over'); return; }
+
+  document.getElementById('eng-msg').textContent='Fetching candle data...';
+  const candles=await fetchCandles();
+  if(!candles){ document.getElementById('eng-msg').textContent='Candle fetch failed, retrying...'; setTimeout(runEngine,8000); return; }
+
+  const cp=btcPrice, sp=currentMarket.startPrice, yp=latestOdds.yes, np=latestOdds.no;
+  const elapsed=300-secsLeft;
+  const delta=((cp-sp)/sp)*100;
+
+  let bull=0,bear=0;
+  // Window delta (weight 8)
+  if(delta>0.10)bull+=8;else if(delta>0.05)bull+=6.4;else if(delta>0.02)bull+=4.8;else if(delta>0.005)bull+=2.4;
+  else if(delta<-0.10)bear+=8;else if(delta<-0.05)bear+=6.4;else if(delta<-0.02)bear+=4.8;else if(delta<-0.005)bear+=2.4;
+  // Momentum (2.5)
+  if(candles.length>=3){const m1=candles[candles.length-1].close-candles[candles.length-1].open,m2=candles[candles.length-2].close-candles[candles.length-2].open;if(m1>0&&m2>0)bull+=2.5;else if(m1<0&&m2<0)bear+=2.5;else if(m1>0)bull+=1.25;else if(m1<0)bear+=1.25;}
+  // 3m trend (2)
+  if(candles.length>=4){const s=candles.slice(-3),bc=s.filter(x=>x.close>x.open).length,rc=s.filter(x=>x.close<x.open).length;if(bc===3)bull+=2;else if(rc===3)bear+=2;else if(bc===2)bull+=1;else if(rc===2)bear+=1;}
+  // 5m (1.5)
+  if(candles.length>=6){const mv=candles[candles.length-1].close-candles[candles.length-5].open,pv=(mv/candles[candles.length-5].open)*100;if(pv>0.08)bull+=1.5;else if(pv>0.02)bull+=0.9;else if(pv<-0.08)bear+=1.5;else if(pv<-0.02)bear+=0.9;}
+  // EMA (1)
+  if(candles.length>=22){const cl=candles.map(x=>x.close),e9=ema(cl.slice(-9),9),e21=ema(cl.slice(-21),21),g=((e9-e21)/e21)*100;if(g>0.02)bull+=1;else if(g<-0.02)bear+=1;}
+  // RSI (1.5)
+  if(candles.length>=16){const r=rsi(candles.map(x=>x.close),14);if(r<25)bull+=1.5;else if(r<35)bull+=0.75;else if(r>75)bear+=1.5;else if(r>65)bear+=0.75;}
+  // Market odds (2)
+  if(yp>0.70)bull+=2;else if(yp>0.55)bull+=1.2;else if(np>0.70)bear+=2;else if(np>0.55)bear+=1.2;
+  // Wick (1.5)
+  if(candles.length>=2){const l=candles[candles.length-1],body=Math.abs(l.close-l.open),range=l.high-l.low;if(range>0){const uw=(l.high-Math.max(l.open,l.close))/range,lw=(Math.min(l.open,l.close)-l.low)/range;if(uw>0.5&&body/range<0.3)bear+=1.5;else if(lw>0.5&&body/range<0.3)bull+=1.5;}}
+  // Mean rev (1)
+  if(candles.length>=10){const m=avg(candles.slice(-10).map(x=>x.close)),dev=((cp-m)/m)*100;if(dev>0.15)bear+=0.8;else if(dev<-0.15)bull+=0.8;}
+
+  const total=bull+bear,edge=Math.abs(bull-bear);
+  let conf=total>0?edge/total:0;
+  if(candles.length>=5){let dc=0;const sl=candles.slice(-5);for(let i=1;i<sl.length;i++){const p=sl[i-1].close-sl[i-1].open,q=sl[i].close-sl[i].open;if((p>0&&q<0)||(p<0&&q>0))dc++;}conf-=(dc/4)*0.15;}
+  if(candles.length>=7){const ra=avg(candles.slice(-3).map(x=>x.volume)),pa=avg(candles.slice(-6,-3).map(x=>x.volume)),ratio=ra/pa;if(ratio>1.5)conf+=0.1;else if(ratio<0.6)conf-=0.1;}
+  if(elapsed>=90&&elapsed<=180)conf+=0.1;
+  conf=clamp(conf,0,1);
+  const quality=clamp(((total/22)+conf)/2,0,1);
+
+  let decision='NO TRADE',reason='';
+  if(conf<0.28){decision='NO TRADE';reason='confidence too low ('+Math.round(conf*100)+'%)';}
+  else if(edge<1.0){decision='NO TRADE';reason='edge too small ('+edge.toFixed(1)+')';}
+  else if(bull>bear){decision='BUY UP';reason='bull '+bull.toFixed(1)+' vs bear '+bear.toFixed(1);}
+  else{decision='BUY DOWN';reason='bear '+bear.toFixed(1)+' vs bull '+bull.toFixed(1);}
+
+  console.log('[ENGINE]',decision,'| conf:'+Math.round(conf*100)+'% edge:'+edge.toFixed(1));
+
+  lockedDecision={wts:currentMarket.wts,decision,reason,bull,bear,conf,quality,edge,startPrice:sp,lockedAt:Date.now(),lockedAtElapsed:elapsed,resolved:false};
+
+  const time=new Date(currentMarket.wts*1000).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'America/New_York'});
+  tracker.history=tracker.history.filter(h=>h.window!==currentMarket.wts);
+  tracker.history.push({time,decision,result:'PENDING',window:currentMarket.wts});
+  if(tracker.history.length>50)tracker.history.shift();
+  saveTracker(); renderTracker(); renderPredCard(lockedDecision);
+}
+
+function renderPredCard(d){
+  const card=document.getElementById('engine-card'); if(!card||!d) return;
+  const{decision,reason,bull,bear,conf,quality,edge,lockedAt,lockedAtElapsed}=d;
+  const dc=decision==='BUY UP'?'up':decision==='BUY DOWN'?'down':'none';
+  const icon=decision==='BUY UP'?'↑':decision==='BUY DOWN'?'↓':'—';
+  const lbl=decision==='BUY UP'?'YES · UP':decision==='BUY DOWN'?'NO · DOWN':'NO TRADE';
+  const cc=dc==='up'?'var(--green)':dc==='down'?'var(--red)':'var(--amber)';
+  const cPct=Math.round((conf||0)*100),qPct=Math.round((quality||0)*100);
+  const lt=lockedAt?new Date(lockedAt).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true,timeZone:'America/New_York'})+' ET':'—';
+  card.className='pred-card '+dc;
+  card.innerHTML=`
+    <div class="pred-head">
+      <div class="pred-head-left">Signal Engine</div>
+      <div class="pred-head-right">Locked ${lt} · <span id="eng-countdown">—</span></div>
+    </div>
+    <div class="pred-main ${dc}">
+      <div class="pred-icon">${icon}</div>
+      <div class="pred-label">${lbl}</div>
+      <div class="pred-sublabel">${decision==='BUY UP'?'BTC predicted to finish above PTB':decision==='BUY DOWN'?'BTC predicted to finish below PTB':'Signals mixed — skip this window'}</div>
+      <div class="pred-scores"><span class="bull">Bull ${(bull||0).toFixed(1)}</span> vs <span class="bear">Bear ${(bear||0).toFixed(1)}</span></div>
+    </div>
+    <div class="conf-section">
+      <div class="conf-row"><div class="conf-label">Confidence</div><div class="conf-pct" style="color:${cc}">${cPct}%</div></div>
+      <div class="conf-track"><div class="conf-fill" style="width:${cPct}%;background:${cc}"></div></div>
+    </div>
+    <div class="conf-section">
+      <div class="conf-row"><div class="conf-label">Trade Quality</div><div class="conf-pct" style="color:var(--purple)">${qPct}%</div></div>
+      <div class="conf-track"><div class="conf-fill" style="width:${qPct}%;background:var(--purple)"></div></div>
+    </div>
+    <div class="next-check">
+      <div class="nc-label">Window closes in</div>
+      <div class="nc-time" id="eng-window-left">—</div>
+    </div>
+    <div class="pred-reason"><div class="reason-txt">⟶ ${reason}</div></div>`;
+}
+
+// countdown
+setInterval(()=>{
+  if(!currentMarket) return;
+  const s=Math.max(0,currentMarket.endSec-Math.floor(Date.now()/1000));
+  const wl=document.getElementById('eng-window-left'),cd=document.getElementById('eng-countdown');
+  if(wl) wl.textContent=fmtT(s);
+  if(cd) cd.textContent=fmtT(s)+' left';
+},1000);
+
+loadTracker();
+</script>
+</body>
+</html>
