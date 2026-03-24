@@ -109,19 +109,6 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .sb-s{background:rgba(60,60,86,.1);color:var(--muted);border:1px solid var(--border2)}
 
 /* MAP */
-.map-card{background:var(--c1);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:12px}
-.map-head{padding:10px 14px;background:var(--c2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.map-title{font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.05em}
-.map-users{font-size:9px;font-family:monospace;color:var(--sub)}
-.map-wrap{position:relative;background:#0a0a0f}
-#world-map{display:block;width:100%}
-.map-dot{position:absolute;transform:translate(-50%,-50%)}
-.map-dot-inner{width:8px;height:8px;border-radius:50%;background:var(--green);position:relative}
-.map-dot-inner::after{content:'';position:absolute;inset:-4px;border-radius:50%;background:rgba(0,232,122,.3);animation:ping 1.5s ease-out infinite}
-@keyframes ping{0%{opacity:.8;transform:scale(1)}100%{opacity:0;transform:scale(2.5)}}
-.map-legend{padding:10px 14px;border-top:1px solid var(--border);display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-.map-legend-item{display:flex;align-items:center;gap:5px;font-size:9px;font-family:monospace;color:var(--sub)}
-.map-legend-dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
 
 /* MODAL */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;align-items:center;justify-content:center}
@@ -231,47 +218,6 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
       </button>
       <div id="sig-extra" style="display:none"></div>
     </div>
-
-    <div class="sec-lbl">Live Visitor Map</div>
-    <div class="map-card">
-      <div class="map-head">
-        <div class="map-title">Active Sessions</div>
-        <div class="map-users" id="map-count">— users online</div>
-      </div>
-      <div class="map-wrap">
-        <svg id="world-map" viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg">
-          <rect width="1000" height="500" fill="#0a0a0f"/>
-          <!-- simplified world outline paths -->
-          <g fill="#1a1a24" stroke="#2a2a3a" stroke-width="0.5">
-            <!-- North America -->
-            <path d="M 80 80 L 220 70 L 260 90 L 280 130 L 260 160 L 240 190 L 220 220 L 200 250 L 180 260 L 160 250 L 140 230 L 120 200 L 100 170 L 80 140 Z"/>
-            <!-- South America -->
-            <path d="M 180 260 L 220 255 L 240 270 L 250 300 L 245 340 L 230 370 L 210 390 L 190 385 L 175 360 L 170 330 L 175 300 Z"/>
-            <!-- Europe -->
-            <path d="M 440 70 L 500 65 L 530 80 L 520 110 L 500 120 L 475 115 L 455 100 Z"/>
-            <!-- Africa -->
-            <path d="M 460 130 L 510 125 L 540 140 L 550 180 L 545 230 L 530 270 L 505 300 L 480 295 L 460 270 L 450 230 L 445 180 Z"/>
-            <!-- Asia -->
-            <path d="M 530 60 L 700 55 L 780 70 L 800 100 L 790 140 L 760 160 L 720 155 L 680 170 L 640 160 L 600 150 L 560 140 L 540 120 L 530 95 Z"/>
-            <!-- Australia -->
-            <path d="M 730 260 L 800 255 L 840 270 L 845 310 L 830 340 L 800 350 L 765 340 L 740 315 L 730 285 Z"/>
-            <!-- UK/Ireland -->
-            <path d="M 430 78 L 442 72 L 448 80 L 440 88 Z"/>
-          </g>
-          <!-- Grid lines -->
-          <g stroke="#1a1a24" stroke-width="0.3" opacity="0.5">
-            <line x1="0" y1="250" x2="1000" y2="250"/>
-            <line x1="500" y1="0" x2="500" y2="500"/>
-          </g>
-          <!-- Dots rendered by JS -->
-          <g id="map-dots"></g>
-        </svg>
-      </div>
-      <div class="map-legend">
-        <div class="map-legend-item"><div class="map-legend-dot"></div>Active user</div>
-        <div class="map-legend-item" style="color:var(--muted);font-size:9px;font-family:monospace;margin-left:auto" id="map-note">Locations are approximate based on IP</div>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -377,38 +323,6 @@ function toggleSig(){
   document.getElementById('sig-arrow').className='expand-arrow'+(sigOpen?' open':'');
 }
 
-// Simulate visitor locations based on user count
-// In production you'd get real IPs and geo-lookup — this generates plausible spread
-const CITY_COORDS = [
-  {name:'New York',x:210,y:148},{name:'Los Angeles',x:130,y:165},{name:'London',x:440,y:88},
-  {name:'Tokyo',x:790,y:140},{name:'Sydney',x:790,y:310},{name:'Paris',x:460,y:92},
-  {name:'Toronto',x:205,y:135},{name:'Chicago',x:195,y:145},{name:'Miami',x:205,y:185},
-  {name:'Berlin',x:475,y:85},{name:'Singapore',x:720,y:230},{name:'Dubai',x:580,y:160},
-  {name:'São Paulo',x:215,y:310},{name:'Mexico City',x:165,y:195},{name:'Seoul',x:775,y:130},
-  {name:'Mumbai',x:628,y:185},{name:'Amsterdam',x:453,y:83},{name:'Madrid',x:440,y:105},
-];
-
-function renderMap(userCount){
-  const dotsEl=document.getElementById('map-dots');
-  const countEl=document.getElementById('map-count');
-  if(!dotsEl)return;
-  countEl.textContent=userCount+' user'+(userCount!==1?'s':'')+' online';
-  if(userCount===0){dotsEl.innerHTML='';return;}
-  // Pick random cities for each user
-  const picked=[];
-  const shuffled=[...CITY_COORDS].sort(()=>Math.random()-.5);
-  for(let i=0;i<Math.min(userCount,CITY_COORDS.length);i++) picked.push(shuffled[i]);
-  dotsEl.innerHTML=picked.map(c=>`
-    <g>
-      <circle cx="${c.x}" cy="${c.y}" r="6" fill="rgba(0,232,122,0.15)" stroke="none">
-        <animate attributeName="r" values="4;10;4" dur="2s" repeatCount="indefinite"/>
-        <animate attributeName="opacity" values="0.6;0;0.6" dur="2s" repeatCount="indefinite"/>
-      </circle>
-      <circle cx="${c.x}" cy="${c.y}" r="4" fill="#00e87a" opacity="0.9"/>
-      <circle cx="${c.x}" cy="${c.y}" r="2" fill="#fff" opacity="0.8"/>
-    </g>
-  `).join('');
-}
 
 async function fetchStats(){
   try{
@@ -469,7 +383,6 @@ async function fetchStats(){
     } else document.getElementById('sig-btn').style.display='none';
 
     // Map
-    renderMap(d.liveUsers||0);
   }catch(e){console.error(e);}
 }
 function startPolling(){fetchStats();pollTimer=setInterval(fetchStats,3000);}

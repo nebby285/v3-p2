@@ -150,6 +150,15 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
   #page-body{display:grid;grid-template-columns:1fr 1fr;max-width:1060px;margin:0 auto;align-items:start}
   .left-col{padding:0 8px 0 14px}
   .right-col{padding:0 14px 0 8px;border-left:1px solid var(--border)}
+  #page-body{align-items:stretch}
+  .right-col{display:flex;flex-direction:column}
+  #engine-wrap{flex:1;display:flex;flex-direction:column}
+  #engine-card{flex:1;overflow:hidden}
+  #engine-card .pred-main{padding:14px 14px 10px}
+  #engine-card .pred-lbl{font-size:24px}
+  #engine-card .pred-icon{font-size:18px;margin-bottom:2px}
+  #engine-card .wc-block{padding:8px 14px}
+  #engine-card .conf-sec{padding:7px 14px}
   .sec-lbl{padding:13px 4px 7px}
   .card,.pred-card,.tracker-card,.sig-breakdown{margin:0 0 8px}
   .disc{margin:0 0 8px}
@@ -198,6 +207,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
   </div>
   <div class="right-col">
     <div class="sec-lbl">Prediction</div>
+    <div id="engine-wrap">
     <div class="pred-card" id="engine-card">
       <div class="pred-head">
         <div class="pred-head-l">Signal Engine</div>
@@ -208,6 +218,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
     <div class="sig-breakdown" id="sig-breakdown" style="display:none">
       <div class="sb-head">Signal Breakdown</div>
       <div class="sb-grid" id="sb-grid"></div>
+    </div>
     </div>
   </div>
 </div>
