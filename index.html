@@ -30,10 +30,20 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .ws-pill.connected .ws-dot{animation:blink 1.4s ease-in-out infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
 #tb-clock{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted)}
+#price-hero{padding:16px 14px 12px;border-bottom:1px solid var(--border);background:var(--c1)}
+.ph-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
+.ph-lbl{font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
 #btc-price{font-family:'JetBrains Mono',monospace;font-size:36px;font-weight:800;letter-spacing:-2.5px;transition:color .2s}
 #btc-price.up{color:var(--green)}#btc-price.down{color:var(--red)}
+.ph-r{text-align:right}
+.ph-rlbl{font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px}
 #hero-window{font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--sub)}
+.delta-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+#delta-usd{font-size:20px;font-weight:800;font-family:'JetBrains Mono',monospace;letter-spacing:-1px}
 #delta-pct-chip{font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace;padding:3px 8px;border-radius:4px}
+.ptb-row{display:flex;align-items:center;gap:8px;padding-top:8px;border-top:1px solid var(--border)}
+.ptb-lbl{font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.08em}
+#ptb-val{font-size:13px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--sub)}
 .cl-chip{font-size:8px;font-weight:700;font-family:'JetBrains Mono',monospace;background:rgba(85,136,255,.1);border:1px solid rgba(85,136,255,.2);color:var(--blue);padding:2px 5px;border-radius:2px;margin-left:auto}
 #page-body{display:block}
 .left-col,.right-col{padding:0}
@@ -147,6 +157,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 @keyframes spin{to{transform:rotate(360deg)}}
 @media(min-width:860px){
   #topbar{padding:0 24px;height:48px}
+  #price-hero{padding:18px 24px 14px}
   #page-body{display:grid;grid-template-columns:1fr 1fr;max-width:1060px;margin:0 auto;align-items:start}
   .left-col{padding:0 8px 0 14px}
   .right-col{padding:0 14px 0 8px;border-left:1px solid var(--border)}
@@ -177,17 +188,26 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
   </div>
 </div>
 
-<div id="price-strip" style="padding:12px 14px;border-bottom:1px solid var(--border);background:var(--c1);display:flex;align-items:center;justify-content:space-between;gap:12px">
-  <div>
-    <div style="font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Bitcoin / USD</div>
-    <div style="display:flex;align-items:baseline;gap:10px">
-      <div id="btc-price" style="font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:800;letter-spacing:-1.5px;transition:color .2s">—</div>
-      <div class="cl-chip">CHAINLINK</div>
+<div id="price-hero">
+  <div class="ph-top">
+    <div>
+      <div class="ph-lbl">Bitcoin / USD</div>
+      <div id="btc-price">—</div>
+    </div>
+    <div class="ph-r">
+      <div class="ph-rlbl">Current window</div>
+      <div id="hero-window">—</div>
     </div>
   </div>
-  <div style="text-align:right">
-    <div style="font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px">Current window</div>
-    <div id="hero-window" style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--sub)">—</div>
+  <div class="delta-row">
+    <div id="delta-usd" style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:800;letter-spacing:-1px;color:var(--sub)">—</div>
+    <div id="delta-pct-chip" style="font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace;padding:3px 8px;border-radius:4px;color:var(--sub)">—</div>
+    <div style="font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace">vs PTB</div>
+  </div>
+  <div class="ptb-row">
+    <div class="ptb-lbl">Price to Beat</div>
+    <div id="ptb-val">—</div>
+    <div class="cl-chip">CHAINLINK</div>
   </div>
 </div>
 
@@ -312,7 +332,25 @@ function setBTC(p){
   prevBTC=p;
 }
 
-// Delta is now shown inside the market card only
+// Delta display
+function updateDelta(){
+  if(!btcPrice||!currentMarket?.startPrice)return;
+  const sp=currentMarket.startPrice,diff=btcPrice-sp,pct=((diff/sp)*100).toFixed(3);
+  const usdEl=document.getElementById('delta-usd'),pctEl=document.getElementById('delta-pct-chip');
+  const ptbEl=document.getElementById('ptb-val');
+  if(ptbEl) ptbEl.textContent='$'+fmt(sp);
+  if(!usdEl||!pctEl)return;
+  if(diff>0){
+    usdEl.textContent='+$'+fmt(diff); usdEl.style.color='var(--green)';
+    pctEl.textContent='+'+pct+'%'; pctEl.style.cssText='font-size:11px;font-weight:700;font-family:JetBrains Mono,monospace;padding:3px 8px;border-radius:4px;background:var(--gd);border:1px solid var(--gb);color:var(--green)';
+  } else if(diff<0){
+    usdEl.textContent='-$'+fmt(Math.abs(diff)); usdEl.style.color='var(--red)';
+    pctEl.textContent=pct+'%'; pctEl.style.cssText='font-size:11px;font-weight:700;font-family:JetBrains Mono,monospace;padding:3px 8px;border-radius:4px;background:var(--rd);border:1px solid var(--rb);color:var(--red)';
+  } else {
+    usdEl.textContent='$0.00'; usdEl.style.color='var(--sub)';
+    pctEl.textContent='0.000%'; pctEl.style.color='var(--sub)';
+  }
+}
 
 // Odds
 let lastOddsT=0,pendingOdds=null;
@@ -337,6 +375,7 @@ function render(market,odds){
   const fh=d=>d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'America/New_York'});
   const sd=new Date(market.wts*1000),ed=new Date(market.endSec*1000);
   document.getElementById('hero-window').textContent=fh(sd)+' – '+fh(ed)+' ET';
+  if(sp) document.getElementById('ptb-val').textContent='$'+fmt(sp);
   const bc=pct<20?'var(--red)':pct<40?'var(--amber)':'var(--green)';
   let diff=btcPrice&&sp?btcPrice-sp:null,diffPct=diff!=null?((diff/sp)*100).toFixed(3):null;
   let dirHtml='<div class="dchip flat" id="dtag">— loading</div>';
@@ -376,7 +415,7 @@ function startCd(){
       if(dg){if(diff>0){dg.className='dchip up';dg.textContent='▲ +'+pct+'%';}else if(diff<0){dg.className='dchip down';dg.textContent='▼ '+pct+'%';}else{dg.className='dchip flat';dg.textContent='→ FLAT';}}
       if(vv){const usd=(diff>=0?'+':'')+fmt(diff);if(diff>0){vv.className='vs-val up';vv.textContent='$'+usd+' (+'+pct+'%)';}else if(diff<0){vv.className='vs-val down';vv.textContent='$'+usd+' ('+pct+'%)';}else{vv.className='vs-val flat';vv.textContent='$0.00 (0.000%)';}}
     }
-    
+    updateDelta();
     const wl=document.getElementById('eng-wl'),cd=document.getElementById('eng-cd');
     if(wl)wl.textContent=fmtT(s);
     if(cd)cd.textContent=fmtT(s)+' left';
@@ -396,14 +435,14 @@ function connect(){
       const newW=!currentMarket||msg.market.wts!==currentMarket.wts;
       if(newW&&currentMarket)resolveDecision();
       currentMarket=msg.market;latestOdds=msg.odds;
-      render(currentMarket,latestOdds);
+      render(currentMarket,latestOdds);updateDelta();
       if(newW){
         lockedDecision=null;
         document.getElementById('engine-card').innerHTML=`<div class="pred-head"><div class="pred-head-l">Signal Engine</div><div class="pred-head-r">Waiting for 60s mark...</div></div><div class="loading"><div class="spinner"></div><div>New window opened</div></div>`;
         document.getElementById('sig-breakdown').style.display='none';
       } else if(lockedDecision)renderPredCard(lockedDecision);
     }
-    if(msg.type==='btc_price'){btcPrice=msg.price;setBTC(btcPrice);}
+    if(msg.type==='btc_price'){btcPrice=msg.price;setBTC(btcPrice);updateDelta();}
     if(msg.type==='odds'){latestOdds={yes:msg.yes,no:msg.no};updateOdds(msg.yes,msg.no);}
     if(msg.type==='tracker'){tracker=msg.tracker;renderTracker();}
     if(msg.type==='engine_waiting'){
