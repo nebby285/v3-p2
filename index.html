@@ -247,7 +247,9 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
       <div class="ts-cell"><div class="ts-label">Win Rate</div><div class="ts-val rate" id="t-rate">—</div></div>
     </div>
     <div class="tracker-history">
-      <div class="th-title">Recent Decisions (last 10)</div>
+      <div class="th-title">Equity Curve</div>
+      <canvas id="equity-chart" height="70" style="width:100%;display:block;margin-bottom:14px;border-radius:6px;overflow:hidden"></canvas>
+      <div class="th-title">Recent Decisions</div>
       <div class="th-list" id="tracker-list"><div class="th-empty">No decisions yet</div></div>
     </div>
   </div>
@@ -479,7 +481,7 @@ function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
 
 async function fetchCandles(){
   try{
-    const r=await fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1m&limit=30',{signal:AbortSignal.timeout(8000)});
+    const r=await fetch('https://v3-production-1fb6.up.railway.app/candles',{signal:AbortSignal.timeout(8000)});
     if(!r.ok) throw new Error('HTTP '+r.status);
     return (await r.json()).map(c=>({open:+c[1],high:+c[2],low:+c[3],close:+c[4],volume:+c[5]}));
   }catch(e){ console.error('[ENGINE] candle fetch failed:',e.message); return null; }
