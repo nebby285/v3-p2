@@ -343,7 +343,7 @@ connect();
 
 // Tracker
 async function loadTracker(){
-  try{const r=await fetch(API+'/tracker',{signal:AbortSignal.timeout(5000)});if(r.ok){tracker=await r.json();renderTracker();}}catch(e){}
+  try{const r=await fetch(API+'/tracker',{signal:AbortSignal.timeout(5000)});if(r.ok){tracker=await r.json();renderTracker();setTimeout(drawEquityCurve,300);}}catch(e){}
 }
 async function saveTracker(){
   try{await fetch(API+'/tracker',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(tracker)});}catch(e){}
@@ -378,8 +378,8 @@ function renderTracker(){
 }
 function drawEquityCurve(){
   const canvas=document.getElementById('equity-chart'); if(!canvas)return;
-  const W=canvas.offsetWidth;
-  if(W<10){setTimeout(drawEquityCurve,300);return;} // wait for layout
+  const W=canvas.getBoundingClientRect().width||canvas.parentElement?.offsetWidth||canvas.offsetWidth||300;
+  if(W<10){setTimeout(drawEquityCurve,500);return;}
   const ctx=canvas.getContext('2d'),dpr=window.devicePixelRatio||1,H=70;
   canvas.width=W*dpr; canvas.height=H*dpr; ctx.scale(dpr,dpr);
   ctx.fillStyle='#111116'; ctx.fillRect(0,0,W,H);
@@ -426,12 +426,15 @@ function renderPredCard(d){
     <div class="pred-reason"><div class="reason-txt">⟶ ${reason}</div></div>`;
 }
 
+// Countdown + auto-resolve when window closes
 setInterval(()=>{
-  if(!currentMarket)return;
+  if(!currentMarket) return;
   const s=Math.max(0,currentMarket.endSec-Math.floor(Date.now()/1000));
   const wl=document.getElementById('eng-wl'),cd=document.getElementById('eng-cd');
   if(wl)wl.textContent=fmtT(s);
   if(cd)cd.textContent=fmtT(s)+' left';
+  // Auto-resolve the moment window closes
+  if(s===0&&lockedDecision&&!lockedDecision.resolved&&btcPrice) resolveDecision();
 },1000);
 
 loadTracker();
