@@ -150,15 +150,6 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
   #page-body{display:grid;grid-template-columns:1fr 1fr;max-width:1060px;margin:0 auto;align-items:start}
   .left-col{padding:0 8px 0 14px}
   .right-col{padding:0 14px 0 8px;border-left:1px solid var(--border)}
-  #page-body{align-items:stretch}
-  .right-col{display:flex;flex-direction:column}
-  #engine-wrap{flex:1;display:flex;flex-direction:column}
-  #engine-card{flex:1;overflow:hidden}
-  #engine-card .pred-main{padding:14px 14px 10px}
-  #engine-card .pred-lbl{font-size:24px}
-  #engine-card .pred-icon{font-size:18px;margin-bottom:2px}
-  #engine-card .wc-block{padding:8px 14px}
-  #engine-card .conf-sec{padding:7px 14px}
   .sec-lbl{padding:13px 4px 7px}
   .card,.pred-card,.tracker-card,.sig-breakdown{margin:0 0 8px}
   .disc{margin:0 0 8px}
@@ -235,7 +226,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
       <div class="tr-cell"><div class="tr-cl">Losses</div><div class="tr-cv cv-l" id="t-losses">—</div></div>
       <div class="tr-cell"><div class="tr-cl">Skipped</div><div class="tr-cv cv-s" id="t-skips">—</div></div>
       <div class="tr-cell"><div class="tr-cl">Win Rate</div><div class="tr-cv cv-r" id="t-rate">—</div></div>
-      <div class="tr-cell"><div class="tr-cl">Best Streak</div><div class="tr-cv cv-b" id="t-streak">—</div></div>
+      <div class="tr-cell"><div class="tr-cl">Net Units</div><div class="tr-cv cv-b" id="t-net">—</div></div>
     </div>
     <div class="tr-body">
       <div class="tr-lbl">Equity Curve</div>
@@ -409,35 +400,14 @@ function calcStreak(history){
 
 function renderTracker(){
   const w=tracker.wins||0,l=tracker.losses||0,s=tracker.skips||0,t=w+l;
+  const net=w-l;
   document.getElementById('t-wins').textContent=w;
   document.getElementById('t-losses').textContent=l;
   document.getElementById('t-skips').textContent=s;
   document.getElementById('t-rate').textContent=t>0?Math.round((w/t)*100)+'%':'—';
   document.getElementById('tracker-session').textContent=t>0?`${w}W ${l}L · ${Math.round((w/t)*100)}% acc`:'—';
-  const streak=calcStreak(tracker.history||[]);
-  document.getElementById('t-streak').textContent=streak>0?streak+'W':'—';
-  // Session stats card
-  const net=w-l;
-  const stEl=document.getElementById('sess-total'),srEl=document.getElementById('sess-rate');
-  const snEl=document.getElementById('sess-net'),ssEl=document.getElementById('sess-streak');
-  const wlBar=document.getElementById('wl-bar'),wlW=document.getElementById('wl-w'),wlL=document.getElementById('wl-l'),wlMid=document.getElementById('wl-mid');
-  const l5=document.getElementById('last5');
-  if(stEl)stEl.textContent=t||'—';
-  if(srEl)srEl.textContent=t>0?Math.round((w/t)*100)+'%':'—';
-  if(snEl){snEl.textContent=(net>0?'+':'')+net;snEl.style.color=net>0?'var(--green)':net<0?'var(--red)':'var(--sub)';}
-  if(ssEl)ssEl.textContent=streak>0?streak+'W':'—';
-  if(wlBar)wlBar.style.width=t>0?Math.round((w/t)*100)+'%':'0%';
-  if(wlW)wlW.textContent=w+'W';
-  if(wlL)wlL.textContent=l+'L';
-  if(wlMid)wlMid.textContent=t>0?Math.round((w/t)*100)+'% wins':'No trades yet';
-  if(l5){
-    const last5=([...tracker.history||[]]).reverse().slice(0,5);
-    l5.innerHTML=last5.map(h=>{
-      const c=h.result==='WIN'?'var(--green)':h.result==='LOSS'?'var(--red)':h.result==='PENDING'?'var(--amber)':'var(--muted)';
-      const sym=h.result==='WIN'?'W':h.result==='LOSS'?'L':h.result==='PENDING'?'?':'S';
-      return`<div style="width:28px;height:28px;border-radius:6px;background:${h.result==='WIN'?'var(--gd)':h.result==='LOSS'?'var(--rd)':'rgba(60,60,86,.1)'};border:1px solid ${h.result==='WIN'?'var(--gb)':h.result==='LOSS'?'var(--rb)':'var(--border2)'};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:monospace;color:${c}">${sym}</div>`;
-    }).join('');
-  }
+  const netEl=document.getElementById('t-net');
+  if(netEl){netEl.textContent=(net>0?'+':'')+net;netEl.style.color=net>0?'var(--green)':net<0?'var(--red)':'var(--sub)';}
   buildEquityPoints();
   drawEquity();
   const list=document.getElementById('tracker-list'),history=tracker.history||[];
