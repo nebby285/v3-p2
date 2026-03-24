@@ -393,78 +393,42 @@ function drawEquityCurve(){
 window.addEventListener('resize',drawEquityCurve);
 
 // Engine
-function ema(v,p){const k=2/(p+1);let e=v[0];for(let i=1;i<v.length;i++)e=v[i]*k+e*(1-k);return e;}
-function rsi(c,p=14){if(c.length<p+1)return 50;let g=0,l=0;for(let i=c.length-p;i<c.length;i++){const d=c[i]-c[i-1];d>0?g+=d:l-=d;}const ag=g/p,al=l/p;if(!al)return 100;return 100-(100/(1+ag/al));}
-function avg(a){return a.reduce((s,x)=>s+x,0)/a.length;}
 function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
-
-async function fetchCandles(){
-  const sources=[
-    API+'/candles',
-    'https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1m&limit=30',
-  ];
-  for(const url of sources){
-    try{
-      const r=await fetch(url,{signal:AbortSignal.timeout(8000)});
-      if(!r.ok)throw new Error('HTTP '+r.status);
-      const data=await r.json();
-      if(!Array.isArray(data)||!data.length)throw new Error('empty');
-      return data.map(c=>({open:+c[1],high:+c[2],low:+c[3],close:+c[4],volume:+c[5]}));
-    }catch(e){console.warn('[ENGINE] candle source failed:',url,e.message);}
-  }
-  return null;
-}
 
 async function runEngine(){
   if(!currentMarket||!btcPrice||!currentMarket.startPrice){
     document.getElementById('eng-msg').textContent='Waiting for market data...';
     setTimeout(runEngine,3000); return;
   }
-  // Already locked for this window — just re-render
   if(lockedDecision&&lockedDecision.wts===currentMarket.wts&&!lockedDecision.resolved){
     renderPredCard(lockedDecision); return;
   }
   const secsLeft=Math.max(0,currentMarket.endSec-Math.floor(Date.now()/1000));
   if(secsLeft<=0)return;
-  document.getElementById('eng-msg').textContent='Fetching candles...';
-  const candles=await fetchCandles();
-  if(!candles){document.getElementById('eng-msg').textContent='Retrying in 10s...';setTimeout(runEngine,10000);return;}
+
   const cp=btcPrice,sp=currentMarket.startPrice,yp=latestOdds.yes,np=latestOdds.no;
   const elapsed=300-secsLeft,delta=((cp-sp)/sp)*100;
+
   let bull=0,bear=0;
-  // Window delta (8)
+  // Window delta (8) — dominant signal, uses live Chainlink price we already have
   if(delta>0.10)bull+=8;else if(delta>0.05)bull+=6.4;else if(delta>0.02)bull+=4.8;else if(delta>0.005)bull+=2.4;
   else if(delta<-0.10)bear+=8;else if(delta<-0.05)bear+=6.4;else if(delta<-0.02)bear+=4.8;else if(delta<-0.005)bear+=2.4;
-  // Momentum (2.5)
-  if(candles.length>=3){const m1=candles[candles.length-1].close-candles[candles.length-1].open,m2=candles[candles.length-2].close-candles[candles.length-2].open;if(m1>0&&m2>0)bull+=2.5;else if(m1<0&&m2<0)bear+=2.5;else if(m1>0)bull+=1.25;else if(m1<0)bear+=1.25;}
-  // 3m trend (2)
-  if(candles.length>=4){const s=candles.slice(-3),bc=s.filter(x=>x.close>x.open).length,rc=s.filter(x=>x.close<x.open).length;if(bc===3)bull+=2;else if(rc===3)bear+=2;else if(bc===2)bull+=1;else if(rc===2)bear+=1;}
-  // 5m (1.5)
-  if(candles.length>=6){const mv=candles[candles.length-1].close-candles[candles.length-5].open,pv=(mv/candles[candles.length-5].open)*100;if(pv>0.08)bull+=1.5;else if(pv>0.02)bull+=0.9;else if(pv<-0.08)bear+=1.5;else if(pv<-0.02)bear+=0.9;}
-  // EMA (1)
-  if(candles.length>=22){const cl=candles.map(x=>x.close),e9=ema(cl.slice(-9),9),e21=ema(cl.slice(-21),21),g=((e9-e21)/e21)*100;if(g>0.02)bull+=1;else if(g<-0.02)bear+=1;}
-  // RSI (1.5)
-  if(candles.length>=16){const r=rsi(candles.map(x=>x.close),14);if(r<25)bull+=1.5;else if(r<35)bull+=0.75;else if(r>75)bear+=1.5;else if(r>65)bear+=0.75;}
-  // Market odds (2)
+  // Market odds (2) — uses live Polymarket odds we already have
   if(yp>0.70)bull+=2;else if(yp>0.55)bull+=1.2;else if(np>0.70)bear+=2;else if(np>0.55)bear+=1.2;
-  // Wick (1.5)
-  if(candles.length>=2){const l=candles[candles.length-1],body=Math.abs(l.close-l.open),range=l.high-l.low;if(range>0){const uw=(l.high-Math.max(l.open,l.close))/range,lw=(Math.min(l.open,l.close)-l.low)/range;if(uw>0.5&&body/range<0.3)bear+=1.5;else if(lw>0.5&&body/range<0.3)bull+=1.5;}}
-  // Mean reversion (1)
-  if(candles.length>=10){const m=avg(candles.slice(-10).map(x=>x.close)),dev=((cp-m)/m)*100;if(dev>0.15)bear+=0.8;else if(dev<-0.15)bull+=0.8;}
+  // Time in window bonus
+  if(elapsed>=90&&elapsed<=180){bull>bear?bull+=0.5:bear+=0.5;}
+
   const total=bull+bear,edge=Math.abs(bull-bear);
-  let conf=total>0?edge/total:0;
-  if(candles.length>=5){let dc=0;const sl=candles.slice(-5);for(let i=1;i<sl.length;i++){const p=sl[i-1].close-sl[i-1].open,q=sl[i].close-sl[i].open;if((p>0&&q<0)||(p<0&&q>0))dc++;}conf-=(dc/4)*0.15;}
-  if(candles.length>=7){const ra=avg(candles.slice(-3).map(x=>x.volume)),pa=avg(candles.slice(-6,-3).map(x=>x.volume));if(ra/pa>1.5)conf+=0.1;else if(ra/pa<0.6)conf-=0.1;}
-  if(elapsed>=90&&elapsed<=180)conf+=0.1;
-  conf=clamp(conf,0,1);
-  const quality=clamp(((total/22)+conf)/2,0,1);
+  const conf=clamp(total>0?edge/total:0,0,1);
+  const quality=clamp(conf*0.8+(Math.min(elapsed,180)/180)*0.2,0,1);
+
   let decision='NO TRADE',reason='';
-  if(conf<0.28){decision='NO TRADE';reason='confidence too low ('+Math.round(conf*100)+'%)';}
-  else if(edge<1.0){decision='NO TRADE';reason='edge too small ('+edge.toFixed(1)+')';}
-  else if(bull>bear){decision='BUY UP';reason='bull '+bull.toFixed(1)+' vs bear '+bear.toFixed(1);}
-  else{decision='BUY DOWN';reason='bear '+bear.toFixed(1)+' vs bull '+bull.toFixed(1);}
+  if(conf<0.25){decision='NO TRADE';reason='confidence too low ('+Math.round(conf*100)+'%)';}
+  else if(edge<0.8){decision='NO TRADE';reason='edge too small ('+edge.toFixed(1)+')';}
+  else if(bull>bear){decision='BUY UP';reason='delta +'+delta.toFixed(3)+'% | bull '+bull.toFixed(1)+' vs bear '+bear.toFixed(1);}
+  else{decision='BUY DOWN';reason='delta '+delta.toFixed(3)+'% | bear '+bear.toFixed(1)+' vs bull '+bull.toFixed(1);}
+
   console.log('[ENGINE]',decision,'conf:'+Math.round(conf*100)+'% edge:'+edge.toFixed(1));
-  // Lock decision for this window — will not change until next window
   lockedDecision={wts:currentMarket.wts,decision,reason,bull,bear,conf,quality,edge,startPrice:sp,lockedAt:Date.now(),lockedAtElapsed:elapsed,resolved:false};
   const time=new Date(currentMarket.wts*1000).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'America/New_York'});
   tracker.history=tracker.history.filter(h=>h.window!==currentMarket.wts);
