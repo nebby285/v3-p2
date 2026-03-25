@@ -371,8 +371,8 @@ function connect(){
     if(msg.type==='odds'){latestOdds={yes:msg.yes,no:msg.no};updateOdds(msg.yes,msg.no);}
     if(msg.type==='tracker'){tracker=msg.tracker;renderTracker();}
     if(msg.type==='engine_waiting'){
-      const card=document.getElementById('engine-card'),wait=60-msg.elapsed;
-      if(card&&!lockedDecision)card.innerHTML=`<div class="pred-head"><div class="pred-head-l">Signal Engine</div><div class="pred-head-r">Fires in ~${wait}s</div></div><div class="loading"><div class="spinner"></div><div>Waiting for ${wait}s mark...</div></div>`;
+      const card=document.getElementById('engine-card'),wait=msg.secsUntilFire||Math.max(0,60-msg.elapsed);
+      if(card&&!lockedDecision)card.innerHTML=`<div class="pred-head"><div class="pred-head-l">Signal Engine</div><div class="pred-head-r">Signal in ~${wait}s</div></div><div class="loading"><div class="spinner"></div><div>Gathering data... fires at 60s mark</div></div>`;
     }
     if(msg.type==='decision'&&msg.decision&&currentMarket&&msg.decision.wts===currentMarket.wts&&!msg.decision.resolved){
       lockedDecision=msg.decision;renderPredCard(lockedDecision);
