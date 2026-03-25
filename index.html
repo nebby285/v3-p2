@@ -21,7 +21,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .tb-icon{width:26px;height:26px;background:#f7931a;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#fff;font-family:'JetBrains Mono',monospace}
 .tb-name{font-size:14px;font-weight:800;letter-spacing:-.5px}
 .tb-tag{font-size:9px;color:var(--sub);margin-top:1px}
-.tb-r{display:flex;flex-direction:row;align-items:center;gap:8px}
+.tb-r{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
 .ws-pill{display:flex;align-items:center;gap:5px;font-size:9px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.06em;padding:3px 9px;border-radius:20px;border:1px solid;transition:all .3s}
 .ws-pill.connected{color:var(--green);border-color:var(--gb);background:var(--gd)}
 .ws-pill.connecting{color:var(--amber);border-color:rgba(255,187,0,.3);background:rgba(255,187,0,.07)}
@@ -150,12 +150,12 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
   #page-body{display:grid;grid-template-columns:1fr 1fr;max-width:1060px;margin:0 auto;align-items:start}
   .left-col{padding:0 8px 0 14px}
   .right-col{padding:0 14px 0 8px;border-left:1px solid var(--border)}
-  #tracker-full{max-width:1060px;margin:0 auto;padding:0 14px;border-top:1px solid var(--border)}
-  #tracker-full .sec-lbl{padding:13px 0 7px}
-  #tracker-full .tracker-card,#tracker-full .disc{margin:0 0 8px}
   .sec-lbl{padding:13px 4px 7px}
   .card,.pred-card,.tracker-card,.sig-breakdown{margin:0 0 8px}
   .disc{margin:0 0 8px}
+  #tracker-full{max-width:1060px;margin:0 auto;padding:0 14px}
+  #tracker-full .sec-lbl{padding:13px 0 7px}
+  #tracker-full .tracker-card,#tracker-full .disc{margin:0 0 8px}
 }
 @media(max-width:859px){
   body{max-width:480px;margin:0 auto}
@@ -195,17 +195,54 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
   <div class="left-col">
     <div class="sec-lbl">Market</div>
     <div id="main"><div class="loading"><div class="spinner"></div><div>Connecting...</div></div></div>
+    <div class="sec-lbl">Session Stats</div>
+    <div class="card" id="session-card">
+      <div class="card-head"><div class="card-title">Today's Performance</div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;background:var(--border);gap:1px;border-bottom:1px solid var(--border)">
+        <div style="background:var(--c1);padding:12px 14px">
+          <div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace;margin-bottom:5px">Total Trades</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700" id="sess-total">—</div>
+        </div>
+        <div style="background:var(--c1);padding:12px 14px">
+          <div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace;margin-bottom:5px">All-Time Win Rate</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700;color:var(--amber)" id="sess-rate">—</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;background:var(--border);gap:1px;border-bottom:1px solid var(--border)">
+        <div style="background:var(--c1);padding:12px 14px">
+          <div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace;margin-bottom:5px">Net Units</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700" id="sess-net">—</div>
+        </div>
+        <div style="background:var(--c1);padding:12px 14px">
+          <div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace;margin-bottom:5px">Best Streak</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700;color:var(--purple)" id="sess-streak">—</div>
+        </div>
+      </div>
+      <div style="padding:12px 14px;background:var(--c2)">
+        <div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace;margin-bottom:8px">Win / Loss Ratio</div>
+        <div style="height:6px;background:var(--border2);border-radius:3px;overflow:hidden;margin-bottom:6px">
+          <div id="wl-bar" style="height:100%;background:var(--green);border-radius:3px;transition:width .6s ease;width:0%"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:9px;font-family:'JetBrains Mono',monospace">
+          <span style="color:var(--green)" id="wl-w">0W</span>
+          <span style="color:var(--muted)" id="wl-mid">—</span>
+          <span style="color:var(--red)" id="wl-l">0L</span>
+        </div>
+      </div>
+      <div style="padding:10px 14px;background:var(--c2);border-top:1px solid var(--border)">
+        <div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace;margin-bottom:6px">Last 5 Decisions</div>
+        <div id="last5" style="display:flex;gap:5px"></div>
+      </div>
+    </div>
   </div>
   <div class="right-col">
     <div class="sec-lbl">Prediction</div>
-    <div id="engine-wrap">
-      <div class="pred-card" id="engine-card">
-        <div class="pred-head">
-          <div class="pred-head-l">Signal Engine</div>
-          <div class="pred-head-r" id="eng-status">Waiting...</div>
-        </div>
-        <div class="loading"><div class="spinner"></div><div id="eng-msg">Connecting to feed...</div></div>
+    <div class="pred-card" id="engine-card">
+      <div class="pred-head">
+        <div class="pred-head-l">Signal Engine</div>
+        <div class="pred-head-r" id="eng-status">Waiting...</div>
       </div>
+      <div class="loading"><div class="spinner"></div><div id="eng-msg">Connecting to feed...</div></div>
     </div>
     <div class="sig-breakdown" id="sig-breakdown" style="display:none">
       <div class="sb-head">Signal Breakdown</div>
@@ -215,38 +252,37 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 </div>
 
 <div id="tracker-full">
-    <div class="sec-lbl">Track Record</div>
-    <div class="tracker-card">
-      <div class="tr-head">
-        <div class="tr-hl">Signal Performance</div>
-        <div class="tr-acc" id="tracker-session">—</div>
-      </div>
-      <div class="tr-stats">
-        <div class="tr-cell"><div class="tr-cl">Wins</div><div class="tr-cv cv-w" id="t-wins">—</div></div>
-        <div class="tr-cell"><div class="tr-cl">Losses</div><div class="tr-cv cv-l" id="t-losses">—</div></div>
-        <div class="tr-cell"><div class="tr-cl">Skipped</div><div class="tr-cv cv-s" id="t-skips">—</div></div>
-        <div class="tr-cell"><div class="tr-cl">Win Rate</div><div class="tr-cv cv-r" id="t-rate">—</div></div>
-        <div class="tr-cell"><div class="tr-cl">Net Units</div><div class="tr-cv cv-b" id="t-net">—</div></div>
-      </div>
-      <div class="tr-body">
-        <div class="tr-lbl">Equity Curve</div>
-        <div class="eq-wrap">
-          <canvas id="eq-canvas" height="140"></canvas>
-          <div class="eq-tooltip" id="eq-tt">
-            <div class="tt-time" id="tt-time">—</div>
-            <div class="tt-dec" id="tt-dec">—</div>
-            <div class="tt-row"><span>Result</span><span class="tt-val" id="tt-res">—</span></div>
-            <div class="tt-row"><span>Confidence</span><span class="tt-val" id="tt-conf">—</span></div>
-            <div class="tt-row"><span>Running P&L</span><span class="tt-val" id="tt-pl">—</span></div>
-          </div>
-        </div>
-        <div class="eq-hint" id="eq-hint">hover any point to inspect</div>
-        <div class="rec-lbl">Recent Decisions</div>
-        <div id="tracker-list"><div class="rec-empty">No decisions yet</div></div>
-      </div>
+  <div class="sec-lbl">Track Record</div>
+  <div class="tracker-card">
+    <div class="tr-head">
+      <div class="tr-hl">Signal Performance</div>
+      <div class="tr-acc" id="tracker-session">—</div>
     </div>
-    <div class="disc">Not financial advice. Automated signal engine for informational purposes only.</div>
+    <div class="tr-stats">
+      <div class="tr-cell"><div class="tr-cl">Wins</div><div class="tr-cv cv-w" id="t-wins">—</div></div>
+      <div class="tr-cell"><div class="tr-cl">Losses</div><div class="tr-cv cv-l" id="t-losses">—</div></div>
+      <div class="tr-cell"><div class="tr-cl">Skipped</div><div class="tr-cv cv-s" id="t-skips">—</div></div>
+      <div class="tr-cell"><div class="tr-cl">Win Rate</div><div class="tr-cv cv-r" id="t-rate">—</div></div>
+      <div class="tr-cell"><div class="tr-cl">Best Streak</div><div class="tr-cv cv-b" id="t-streak">—</div></div>
+    </div>
+    <div class="tr-body">
+      <div class="tr-lbl">Equity Curve</div>
+      <div class="eq-wrap">
+        <canvas id="eq-canvas" height="140"></canvas>
+        <div class="eq-tooltip" id="eq-tt">
+          <div class="tt-time" id="tt-time">—</div>
+          <div class="tt-dec" id="tt-dec">—</div>
+          <div class="tt-row"><span>Result</span><span class="tt-val" id="tt-res">—</span></div>
+          <div class="tt-row"><span>Confidence</span><span class="tt-val" id="tt-conf">—</span></div>
+          <div class="tt-row"><span>Running P&L</span><span class="tt-val" id="tt-pl">—</span></div>
+        </div>
+      </div>
+      <div class="eq-hint" id="eq-hint">hover any point to inspect</div>
+      <div class="rec-lbl">Recent Decisions</div>
+      <div id="tracker-list"><div class="rec-empty">No decisions yet</div></div>
+    </div>
   </div>
+  <div class="disc">Not financial advice. Automated signal engine for informational purposes only.</div>
 </div>
 
 <script>
@@ -371,8 +407,8 @@ function connect(){
     if(msg.type==='odds'){latestOdds={yes:msg.yes,no:msg.no};updateOdds(msg.yes,msg.no);}
     if(msg.type==='tracker'){tracker=msg.tracker;renderTracker();}
     if(msg.type==='engine_waiting'){
-      const card=document.getElementById('engine-card'),wait=msg.secsUntilFire||Math.max(0,60-msg.elapsed);
-      if(card&&!lockedDecision)card.innerHTML=`<div class="pred-head"><div class="pred-head-l">Signal Engine</div><div class="pred-head-r">Signal in ~${wait}s</div></div><div class="loading"><div class="spinner"></div><div>Gathering data... fires at 60s mark</div></div>`;
+      const card=document.getElementById('engine-card'),wait=60-msg.elapsed;
+      if(card&&!lockedDecision)card.innerHTML=`<div class="pred-head"><div class="pred-head-l">Signal Engine</div><div class="pred-head-r">Fires in ~${wait}s</div></div><div class="loading"><div class="spinner"></div><div>Waiting for ${wait}s mark...</div></div>`;
     }
     if(msg.type==='decision'&&msg.decision&&currentMarket&&msg.decision.wts===currentMarket.wts&&!msg.decision.resolved){
       lockedDecision=msg.decision;renderPredCard(lockedDecision);
@@ -401,14 +437,35 @@ function calcStreak(history){
 
 function renderTracker(){
   const w=tracker.wins||0,l=tracker.losses||0,s=tracker.skips||0,t=w+l;
-  const net=w-l;
   document.getElementById('t-wins').textContent=w;
   document.getElementById('t-losses').textContent=l;
   document.getElementById('t-skips').textContent=s;
   document.getElementById('t-rate').textContent=t>0?Math.round((w/t)*100)+'%':'—';
   document.getElementById('tracker-session').textContent=t>0?`${w}W ${l}L · ${Math.round((w/t)*100)}% acc`:'—';
-  const netEl=document.getElementById('t-net');
-  if(netEl){netEl.textContent=(net>0?'+':'')+net;netEl.style.color=net>0?'var(--green)':net<0?'var(--red)':'var(--sub)';}
+  const streak=calcStreak(tracker.history||[]);
+  document.getElementById('t-streak').textContent=streak>0?streak+'W':'—';
+  // Session stats card
+  const net=w-l;
+  const stEl=document.getElementById('sess-total'),srEl=document.getElementById('sess-rate');
+  const snEl=document.getElementById('sess-net'),ssEl=document.getElementById('sess-streak');
+  const wlBar=document.getElementById('wl-bar'),wlW=document.getElementById('wl-w'),wlL=document.getElementById('wl-l'),wlMid=document.getElementById('wl-mid');
+  const l5=document.getElementById('last5');
+  if(stEl)stEl.textContent=t||'—';
+  if(srEl)srEl.textContent=t>0?Math.round((w/t)*100)+'%':'—';
+  if(snEl){snEl.textContent=(net>0?'+':'')+net;snEl.style.color=net>0?'var(--green)':net<0?'var(--red)':'var(--sub)';}
+  if(ssEl)ssEl.textContent=streak>0?streak+'W':'—';
+  if(wlBar)wlBar.style.width=t>0?Math.round((w/t)*100)+'%':'0%';
+  if(wlW)wlW.textContent=w+'W';
+  if(wlL)wlL.textContent=l+'L';
+  if(wlMid)wlMid.textContent=t>0?Math.round((w/t)*100)+'% wins':'No trades yet';
+  if(l5){
+    const last5=([...tracker.history||[]]).reverse().slice(0,5);
+    l5.innerHTML=last5.map(h=>{
+      const c=h.result==='WIN'?'var(--green)':h.result==='LOSS'?'var(--red)':h.result==='PENDING'?'var(--amber)':'var(--muted)';
+      const sym=h.result==='WIN'?'W':h.result==='LOSS'?'L':h.result==='PENDING'?'?':'S';
+      return`<div style="width:28px;height:28px;border-radius:6px;background:${h.result==='WIN'?'var(--gd)':h.result==='LOSS'?'var(--rd)':'rgba(60,60,86,.1)'};border:1px solid ${h.result==='WIN'?'var(--gb)':h.result==='LOSS'?'var(--rb)':'var(--border2)'};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:monospace;color:${c}">${sym}</div>`;
+    }).join('');
+  }
   buildEquityPoints();
   drawEquity();
   const list=document.getElementById('tracker-list'),history=tracker.history||[];
@@ -561,21 +618,21 @@ function renderPredCard(d){
 
 function renderSigBreakdown(d){
   const bd=document.getElementById('sig-breakdown'),grid=document.getElementById('sb-grid');
-  if(!bd||!grid)return;
-  const sv=d.sv||{};
+  if(!bd||!grid||!d.reason)return;
+  const reason=d.reason||'';
   const sigs=[
-    {name:'Window delta',   vote:sv.delta    ||'neut'},
-    {name:'Market odds',    vote:sv.odds     ||'neut'},
-    {name:'1m momentum',    vote:sv.momentum ||'neut'},
-    {name:'3m trend',       vote:sv.trend    ||'neut'},
-    {name:'EMA 9/21',       vote:sv.ema      ||'neut'},
-    {name:'RSI 14',         vote:sv.rsi      ||'neut'},
-    {name:'Volume',         vote:sv.volume   ||'neut'},
-    {name:'Wick rejection', vote:sv.wick     ||'neut'},
+    {name:'Window delta',bull:reason.includes('delta strongly UP')||reason.includes('delta UP')||reason.includes('delta slightly UP')||reason.includes('delta barely UP'),bear:reason.includes('delta strongly DOWN')||reason.includes('delta DOWN')||reason.includes('delta slightly DOWN')||reason.includes('delta barely DOWN'),note:reason.match(/delta [^\s·]+/)?reason.match(/delta [^\s·]+/)[0]:'—'},
+    {name:'Market odds',bull:reason.includes('YES bid')||reason.includes('YES lean'),bear:reason.includes('NO bid')||reason.includes('NO lean'),note:reason.match(/(YES|NO) (bid|lean) \d+¢/)?reason.match(/(YES|NO) (bid|lean) \d+¢/)[0]:'—'},
+    {name:'1m momentum',bull:reason.includes('2 bull candles')||reason.includes('last candle bullish'),bear:reason.includes('2 bear candles')||reason.includes('last candle bearish'),note:reason.includes('candle')?reason.match(/\d+ (bull|bear) candles?|last candle \w+/)?.[0]||'—':'—'},
+    {name:'3m trend',bull:reason.includes('3/3 bull')||reason.includes('2/3 bull'),bear:reason.includes('3/3 bear')||reason.includes('2/3 bear'),note:reason.match(/\d\/\d (bull|bear)/)?reason.match(/\d\/\d (bull|bear)/)[0]:'—'},
+    {name:'EMA 9/21',bull:reason.includes('EMA9 above')||reason.includes('EMA9>EMA21'),bear:reason.includes('EMA9 below')||reason.includes('EMA9<EMA21'),note:reason.includes('EMA')?'EMA signal':'—'},
+    {name:'RSI 14',bull:reason.includes('RSI oversold')||reason.includes('RSI low'),bear:reason.includes('RSI overbought')||reason.includes('RSI high'),note:reason.match(/RSI \w+ \d+/)?reason.match(/RSI \w+ \d+/)[0]:'—'},
+    {name:'Volume',bull:reason.includes('vol surge')||reason.includes('vol elevated'),bear:false,note:reason.match(/vol \w+( [\d.]+x)?/)?reason.match(/vol \w+( [\d.]+x)?/)[0]:'—'},
+    {name:'Wick rejection',bull:reason.includes('bull wick'),bear:reason.includes('bear wick'),note:reason.match(/\w+ wick \d+%/)?reason.match(/\w+ wick \d+%/)[0]:'—'},
   ];
   grid.innerHTML=sigs.map(s=>{
-    const cls=s.vote==='bull'?'sbb':s.vote==='bear'?'sbr':'sbn';
-    const txt=s.vote==='bull'?'BULL':s.vote==='bear'?'BEAR':'NEUT';
+    const cls=s.bull?'sbb':s.bear?'sbr':'sbn';
+    const txt=s.bull?'BULL':s.bear?'BEAR':'NEUT';
     return`<div class="sb-cell"><span class="sb-name">${s.name}</span><span class="sb-badge ${cls}">${txt}</span></div>`;
   }).join('');
   bd.style.display='block';
