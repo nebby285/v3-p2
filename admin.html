@@ -33,14 +33,16 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .nav-icon{width:24px;height:24px;background:#f7931a;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff;font-family:'JetBrains Mono',monospace}
 .nav-name{font-size:13px;font-weight:800;letter-spacing:-.4px}
 .nav-badge{font-size:8px;font-weight:700;font-family:'JetBrains Mono',monospace;padding:2px 7px;border-radius:3px;background:rgba(85,136,255,.1);border:1px solid rgba(85,136,255,.22);color:var(--blue);letter-spacing:.08em}
-.nav-r{display:flex;align-items:center;gap:14px}
-.nav-link{font-size:9px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--muted);text-decoration:none;transition:color .2s}
-.nav-link:hover{color:var(--text)}
-.nav-link.out:hover{color:var(--red)}
-.nav-clock{font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+.nav-r{display:flex;align-items:center;gap:8px}
+.nav-back{font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;padding:5px 12px;border-radius:6px;border:1px solid var(--border2);color:var(--sub);text-decoration:none;display:inline-flex;align-items:center;gap:5px;transition:all .2s}
+.nav-back:hover{color:var(--text);border-color:var(--text)}
+.nav-clock{font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace;padding:0 4px}
+.nav-signout{font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;padding:5px 12px;border-radius:6px;border:1px solid var(--rb);color:var(--red);background:var(--rd);cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:opacity .2s}
+.nav-signout:hover{opacity:.8}
 
 /* HERO */
-.hero{background:var(--c1);border-bottom:1px solid var(--border);padding:18px 24px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
+.hero{background:var(--c1);border-bottom:1px solid var(--border);padding:18px 24px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;max-width:1060px;margin:0 auto;width:100%}
+.hero-wrap{background:var(--c1);border-bottom:1px solid var(--border)}
 .hero-l{}
 .hero-eye{font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px}
 .hero-price{font-size:38px;font-weight:900;font-family:'JetBrains Mono',monospace;letter-spacing:-2.5px;line-height:1}
@@ -52,14 +54,15 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .hs-val{font-size:20px;font-weight:800;font-family:'JetBrains Mono',monospace;letter-spacing:-1px}
 
 /* STATS ROW */
-.stats-row{display:grid;grid-template-columns:repeat(5,1fr);background:var(--border);gap:1px;border-bottom:1px solid var(--border)}
+.stats-wrap{border-bottom:1px solid var(--border)}
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);background:var(--border);gap:1px;max-width:1060px;margin:0 auto}
 .sr-cell{background:var(--c1);padding:12px 18px}
 .sr-lbl{font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace;margin-bottom:4px}
 .sr-val{font-size:22px;font-weight:800;font-family:'JetBrains Mono',monospace;letter-spacing:-1px;line-height:1}
 .sr-sub{font-size:9px;color:var(--sub);font-family:'JetBrains Mono',monospace;margin-top:2px}
 
 /* BODY */
-.body{display:grid;grid-template-columns:1fr 320px;max-width:100%}
+.body{display:grid;grid-template-columns:1fr 320px;max-width:1060px;margin:0 auto}
 .main-col{border-right:1px solid var(--border);padding:20px 24px}
 .side-col{padding:20px 20px}
 
@@ -115,9 +118,12 @@ canvas{display:block;width:100%}
 .paper-ctrl{background:var(--c2);border:1px solid var(--border);border-radius:var(--r);padding:12px;margin-bottom:16px}
 .pc-row{display:flex;align-items:center;gap:7px}
 .pc-lbl{font-size:9px;font-weight:700;color:var(--muted);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.07em}
-.pc-in{background:var(--c1);border:1px solid var(--border2);border-radius:5px;padding:4px 8px;font-size:12px;font-weight:700;color:var(--text);font-family:'JetBrains Mono',monospace;width:60px;outline:none}
-.pc-btn{font-size:9px;font-weight:700;font-family:'JetBrains Mono',monospace;padding:4px 10px;border-radius:5px;border:1px solid var(--gb);color:var(--green);background:var(--gd);cursor:pointer}
-.pc-rst{font-size:9px;font-weight:700;font-family:'JetBrains Mono',monospace;padding:4px 10px;border-radius:5px;border:1px solid var(--rb);color:var(--red);background:var(--rd);cursor:pointer;margin-left:auto}
+.pc-in{background:var(--c1);border:1px solid var(--border2);border-radius:6px;padding:5px 9px;font-size:12px;font-weight:700;color:var(--text);font-family:'JetBrains Mono',monospace;width:60px;outline:none}
+.pc-in:focus{border-color:var(--blue)}
+.pc-btn{font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;padding:5px 13px;border-radius:6px;border:1px solid var(--gb);color:var(--green);background:var(--gd);cursor:pointer;transition:opacity .2s}
+.pc-btn:hover{opacity:.8}
+.pc-rst{font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;padding:5px 13px;border-radius:6px;border:1px solid var(--rb);color:var(--red);background:var(--rd);cursor:pointer;transition:opacity .2s}
+.pc-rst:hover{opacity:.8}
 
 .ls-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid #111118}
 .ls-row:last-child{border-bottom:none}
@@ -187,12 +193,13 @@ canvas{display:block;width:100%}
       <div class="nav-badge">ADMIN</div>
     </div>
     <div class="nav-r">
-      <a href="/" class="nav-link">← Main Site</a>
+      <a href="/" class="nav-back">← Main Site</a>
       <span class="nav-clock" id="admin-clock">--:--:-- UTC</span>
-      <button class="nav-link out" onclick="logout()" style="border:none;background:none;cursor:pointer;font-family:inherit">Sign Out</button>
+      <button class="nav-signout" onclick="logout()">⏻ Sign Out</button>
     </div>
   </div>
 
+  <div class="hero-wrap">
   <div class="hero">
     <div class="hero-l">
       <div class="hero-eye">Bitcoin / USD · Chainlink Oracle</div>
@@ -209,6 +216,10 @@ canvas{display:block;width:100%}
     </div>
   </div>
 
+  </div>
+  </div>
+
+  <div class="stats-wrap">
   <div class="stats-row">
     <div class="sr-cell"><div class="sr-lbl">Wins</div><div class="sr-val" style="color:var(--green)" id="s-wins">—</div><div class="sr-sub">all time</div></div>
     <div class="sr-cell"><div class="sr-lbl">Losses</div><div class="sr-val" style="color:var(--red)" id="s-losses">—</div><div class="sr-sub">all time</div></div>
@@ -217,12 +228,15 @@ canvas{display:block;width:100%}
     <div class="sr-cell"><div class="sr-lbl">Closes In</div><div class="sr-val" style="color:var(--amber)" id="s-closes">—</div><div class="sr-sub">current window</div></div>
   </div>
 
+  </div>
+  </div>
+
   <div class="body">
     <div class="main-col">
       <div class="graph-head">
         <div><div class="gh-title">Paper Trading P&L</div><div class="gh-sub" id="g-sub">hover any point to inspect</div></div>
         <div style="display:flex;gap:6px;align-items:center">
-          <div class="pc-lbl" style="font-size:9px;color:var(--muted);font-family:monospace">Bet $</div>
+          <span style="font-size:9px;color:var(--muted);font-family:monospace;text-transform:uppercase;letter-spacing:.07em">Bet $</span>
           <input class="pc-in" type="number" id="bet-size" value="10" style="width:55px"/>
           <button class="pc-btn" onclick="updateBetSize()">Set</button>
           <button class="pc-rst" onclick="openModal()">Reset</button>
